@@ -1,0 +1,748 @@
+// Booking controller
+import {
+  Booking,
+  Room,
+  Resource,
+  BookingResource,
+  DepartmentCredit,
+  sequelize,
+  User,
+  Department
+} from '../models/index.js';
+
+import { v4 as uuidv4 } from 'uuid';
+import { Op } from 'sequelize';
+import emailService from '../services/emailService.js';
+import { lockCredits, deductCredits } from '../services/creditService.js';
+
+export function hoursBetween(start, end) {
+  return Math.max(
+    0,
+    Math.ceil((new Date(end) - new Date(start)) / (1000 * 60 * 60))
+  );
+}
+
+// export function calculateCost(room, hours) {
+//   return {
+//     credits: hours * room.creditsPerHour,
+//     // price: hours * room.pricePerHour
+//   };
+// }
+
+// export function calculateResourceCost(resource, qty, hours) {
+//   return {
+//     credits: hours * resource.creditsPerHour * qty,
+//     // price: hours * resource.pricePerHour * qty
+//   };
+// }
+
+export function calculateCredits({ creditsPerHour }, hours, quantity = 1) {
+  return hours * creditsPerHour * quantity;
+}
+
+const isRoomAvailable = async (roomId, start, end, t) => {
+  if (!roomId) return true;
+
+  const conflict = await Booking.findOne({
+    where: {
+      roomId,
+      status: { [Op.in]: ['CONFIRMED', 'PENDING'] },
+      startTime: { [Op.lt]: end },
+      endTime: { [Op.gt]: start },
+      checkedOut: false
+    },
+    transaction: t
+  });
+
+  return !conflict;
+};
+
+const isResourceAvailable = async (
+  resourceId,
+  qty,
+  start,
+  end,
+  t
+) => {
+  const resource = await Resource.findByPk(resourceId, { transaction: t });
+
+  if (!resource || !resource.isActive) {
+    throw new Error('Resource not available');
+  }
+
+  // ✅ SUM ONLY booking_resources.quantity
+  const bookedQty = await BookingResource.sum('quantity', {
+    where: {
+      resourceId
+    },
+    include: [{
+      model: Booking,
+      attributes: [],   // 🔥 CRITICAL: remove Booking columns
+      where: {
+        status: { [Op.in]: ['CONFIRMED', 'PENDING'] },
+        checkedOut: false,
+        startTime: { [Op.lt]: end },
+        endTime: { [Op.gt]: start }
+      }
+    }],
+    transaction: t
+  });
+
+  return (bookedQty || 0) + qty <= resource.quantity;
+};
+
+const createBooking = async (req, res) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const {
+      roomId = null,
+      resources = [],
+      startTime,
+      endTime,
+      title,
+      bookingType = 'ONE_TIME',
+      weeks = 1
+    } = req.body;
+
+    const user = req.user;
+
+    if (!user.departmentId) {
+      return res.status(400).json({
+        error: 'User must belong to a department to create bookings'
+      });
+    }
+
+    if (!roomId && resources.length === 0) {
+      throw new Error('Booking must include a room or at least one resource');
+    }
+
+    /* ---------- OCCURRENCES ---------- */
+    const occurrences = [];
+
+    for (let i = 0; i < weeks; i++) {
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+
+      if (bookingType === 'WEEKLY') {
+        start.setDate(start.getDate() + i * 7);
+        end.setDate(end.getDate() + i * 7);
+      }
+
+      occurrences.push({ start, end });
+    }
+
+    /* ---------- AVAILABILITY CHECK ---------- */
+    for (const o of occurrences) {
+      if (roomId) {
+        const ok = await isRoomAvailable(roomId, o.start, o.end, t);
+        if (!ok) {
+          // throw new Error(`Room conflict on ${o.start.toDateString()}`);
+          throw new Error('Selected room is not available for the chosen time');
+        }
+      }
+
+      for (const r of resources) {
+        const ok = await isResourceAvailable(
+          r.resourceId,
+          r.quantity || 1,
+          o.start,
+          o.end,
+          t
+        );
+
+        if (!ok) {
+          // throw new Error(`Resource unavailable on ${o.start.toDateString()}`);
+          throw new Error('Selected resource is not available for the chosen time');
+        }
+      }
+    }
+
+    /* ---------- CREDIT CALCULATION ---------- */
+    let totalCredits = 0;
+    let room = null;
+
+    for (const o of occurrences) {
+      const hours = hoursBetween(o.start, o.end);
+
+      // ROOM credits
+      if (roomId) {
+        room = room || await Room.findByPk(roomId, { transaction: t });
+        if (!room) throw new Error('Room not found');
+
+        totalCredits += calculateCredits(room, hours, 1);
+      }
+
+      // RESOURCE credits
+      for (const r of resources) {
+        const resource = await Resource.findByPk(r.resourceId, {
+          transaction: t
+        });
+
+        if (!resource || !resource.isActive) {
+          throw new Error('Resource not available');
+        }
+
+        totalCredits += calculateCredits(
+          resource,
+          hours,
+          r.quantity || 1
+        );
+      }
+    }
+
+    /* ---------- APPROVAL / DEDUCTION ---------- */
+    const requiresApproval =
+      room &&
+      (user.role === 'junior' || user.role === 'regular') &&
+      room.type === 'boardroom';
+
+    if (totalCredits > 0) {
+      if (requiresApproval) {
+        await lockCredits(user.departmentId, totalCredits, t);
+      } else {
+        await deductCredits(user.departmentId, totalCredits, t);
+      }
+    }
+
+    /* ---------- CREATE BOOKINGS ---------- */
+    const groupId = bookingType === 'WEEKLY' ? uuidv4() : null;
+    const bookings = [];
+
+    for (const o of occurrences) {
+      const hours = hoursBetween(o.start, o.end);
+      let bookingCredits = 0;
+
+      if (room) {
+        bookingCredits += calculateCredits(room, hours, 1);
+      }
+
+      for (const r of resources) {
+        const resource = await Resource.findByPk(r.resourceId, {
+          transaction: t
+        });
+
+        bookingCredits += calculateCredits(
+          resource,
+          hours,
+          r.quantity || 1
+        );
+      }
+
+      const booking = await Booking.create({
+        uid: uuidv4(),
+        title,
+        roomId,
+        userId: user.id,
+        departmentId: user.departmentId,
+        startTime: o.start,
+        endTime: o.end,
+        status: requiresApproval ? 'PENDING' : 'CONFIRMED',
+        creditsUsed: bookingCredits,
+        isRecurring: bookingType === 'WEEKLY',
+        recurringGroup: groupId
+      }, { transaction: t });
+
+      for (const r of resources) {
+        await BookingResource.create({
+          bookingId: booking.id,
+          resourceId: r.resourceId,
+          quantity: r.quantity || 1
+        }, { transaction: t });
+      }
+
+      bookings.push(booking);
+    }
+
+    await t.commit();
+
+    /* ---------- SEND EMAIL AFTER COMMIT ---------- */
+    for (const b of bookings) {
+      if (b.status === 'CONFIRMED') {
+        emailService
+          .sendBookingConfirmationEmail(b.id)
+          .catch(err => {
+            console.error(
+              `Email failed for booking ${b.id}:`,
+              err.message
+            );
+          });
+      }
+    }
+
+    res.json({ ok: true, count: bookings.length, bookings });
+
+  } catch (err) {
+    await t.rollback();
+    res.status(400).json({ error: err.message });
+  }
+};
+
+
+const listBookings = async (req, res) => {
+  const user = req.user;
+
+  const bookings = await Booking.findAll({
+    where: {
+      userId: user.id
+    },
+    include: [
+      {
+        model: Room,
+        attributes: ['id', 'name', 'type']
+      },
+      {
+        model: Resource,
+        attributes: ['id', 'name'],
+        through: {
+          model: BookingResource,
+          attributes: ['quantity']
+        }
+      }
+    ],
+    order: [['startTime', 'ASC']]
+  });
+
+  res.json(bookings);
+};
+
+const getBooking = async (req, res) => {
+  const booking = await Booking.findByPk(req.params.id, {
+    include: [
+      Room,
+      {
+        model: Resource,
+        through: { attributes: ['quantity'] }
+      }
+    ]
+  });
+
+  if (!booking) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+
+  res.json(booking);
+};
+
+const createRoom = async (req, res) => {
+  /*
+    Expected payload:
+    {
+      "name": "Board Room A",
+      "type": "boardroom",     // standard | boardroom
+      "capacity": 12,
+      "location": "3rd Floor",
+      "amenities": {
+        "whiteboard": true,
+        "screen": true,
+        "videoConferencing": true
+      }
+    }
+  */
+
+  const { name, type, capacity, creditsPerHour, location, amenities } = req.body;
+  const user = req.user;
+
+  // Optional authorization
+  if (!user || !['admin', 'manager'].includes(user.role)) {
+    return res.status(403).json({ error: 'Not authorized to create rooms' });
+  }
+
+  if (!creditsPerHour || creditsPerHour < 0) {
+    return res.status(400).json({
+      error: 'Valid creditsPerHour is required'
+    });
+  }
+
+  // Validation
+  if (!name || !type || !capacity) {
+    return res.status(400).json({
+      error: 'name, type and capacity are required'
+    });
+  }
+
+  if (!['standard', 'boardroom'].includes(type)) {
+    return res.status(400).json({
+      error: "type must be either 'standard' or 'boardroom'"
+    });
+  }
+
+  if (capacity <= 0) {
+    return res.status(400).json({
+      error: 'capacity must be greater than 0'
+    });
+  }
+
+  const transaction = await sequelize.transaction();
+
+  try {
+    // Prevent duplicate room names
+    const existing = await Room.findOne({
+      where: { name },
+      transaction
+    });
+
+    if (existing) {
+      await transaction.rollback();
+      return res.status(409).json({
+        error: 'Room with this name already exists'
+      });
+    }
+
+    const room = await Room.create(
+      {
+        name,
+        type,
+        capacity,
+        creditsPerHour,
+        location: location || null,
+        features: amenities || {}
+      },
+      { transaction }
+    );
+
+    await transaction.commit();
+    return res.status(201).json({ ok: true, room });
+  } catch (err) {
+    await transaction.rollback();
+    console.error(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+const updateRoom = async (req, res) => {
+  const { id } = req.params;
+  const { name, type, capacity, creditsPerHour, location, amenities } = req.body;
+  const user = req.user;
+
+  if (!user || !['admin', 'manager'].includes(user.role)) {
+    return res.status(403).json({ error: 'Not authorized to update rooms' });
+  }
+
+  const room = await Room.findByPk(id);
+  if (!room) {
+    return res.status(404).json({ error: 'Room not found' });
+  }
+
+  // Validation
+  if (type && !['standard', 'boardroom'].includes(type)) {
+    return res.status(400).json({
+      error: "type must be either 'standard' or 'boardroom'"
+    });
+  }
+
+  if (capacity !== undefined && capacity <= 0) {
+    return res.status(400).json({
+      error: 'capacity must be greater than 0'
+    });
+  }
+
+  if (creditsPerHour !== undefined && creditsPerHour < 0) {
+    return res.status(400).json({
+      error: 'creditsPerHour must be >= 0'
+    });
+  }
+
+  const transaction = await sequelize.transaction();
+
+  try {
+    // prevent duplicate room name
+    if (name && name !== room.name) {
+      const existing = await Room.findOne({
+        where: { name },
+        transaction
+      });
+
+      if (existing) {
+        await transaction.rollback();
+        return res.status(409).json({
+          error: 'Room with this name already exists'
+        });
+      }
+    }
+
+    await room.update(
+      {
+        name: name ?? room.name,
+        type: type ?? room.type,
+        capacity: capacity ?? room.capacity,
+        creditsPerHour: creditsPerHour ?? room.creditsPerHour,
+        location: location ?? room.location,
+        amenities: amenities ?? room.amenities
+      },
+      { transaction }
+    );
+
+    await transaction.commit();
+    return res.json({ ok: true, room });
+  } catch (err) {
+    await transaction.rollback();
+    console.error(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+const deleteRoom = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    if (!user || !['admin', 'manager'].includes(user.role)) {
+      return res.status(403).json({ error: 'Not authorized to delete rooms' });
+    }
+
+    const room = await Room.findByPk(id);
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+
+    const hasFutureBookings = await Booking.findOne({
+      where: {
+        roomId: id,
+        startTime: { [Op.gt]: new Date() },
+        status: { [Op.in]: ['CONFIRMED', 'PENDING'] }
+      }
+    });
+
+    if (hasFutureBookings) {
+      return res.status(400).json({
+        error: 'Cannot delete room with future bookings'
+      });
+    }
+
+    await room.destroy();
+
+    return res.json({
+      ok: true,
+      message: 'Room deleted successfully'
+    });
+  } catch (err) {
+    console.error('Delete room error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+const getCredits = async (req, res) => {
+  try {
+    const user = req.user;
+
+    console.log('credit', user)
+
+    // 👑 Admins don't have credits
+    // if (user.role === 'admin') {
+    //   return res.json({
+    //     availableCredits: 0,
+    //     lockedCredits: 0,
+    //     month: null,
+    //     year: null,
+    //     message: 'Admins do not use department credits'
+    //   });
+    // }
+
+    if (!user.departmentId) {
+      return res.status(400).json({
+        error: 'User does not belong to a department'
+      });
+    }
+
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+
+    const credit = await DepartmentCredit.findOne({
+      where: {
+        departmentId: user.departmentId,
+        month,
+        year
+      }
+    });
+
+    if (!credit) {
+      return res.json({
+        availableCredits: 0,
+        lockedCredits: 0,
+        month,
+        year
+      });
+    }
+
+    console.log('Credits fetched:', credit);
+    res.json({
+      availableCredits: credit.availableCredits,
+      lockedCredits: credit.lockedCredits,
+      month,
+      year
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+const getDepartmentDetails = async (req, res) => {
+  const user = await User.findByPk(req.user.id, {
+    include: {
+      model: Department,
+      attributes: ['id', 'name']
+    }
+  });
+
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  if (!user.Department) {
+    return res.status(400).json({
+      error: 'User is not assigned to any department'
+    });
+  }
+
+  // console.log('Me endpoint user:', user);
+  res.json({
+    id: user.id,
+    name: user.name,
+    role: user.role,
+    departmentId: user.departmentId,
+    department: {
+      id: user.Department.id,
+      name: user.Department.name
+    }
+  });
+};
+
+const checkInBooking = async (req, res) => {
+  const booking = await Booking.findByPk(req.params.id);
+
+  if (!booking) {
+    return res.status(404).json({ error: 'Booking not found' });
+  }
+
+  if (booking.status !== 'CONFIRMED') {
+    return res.status(400).json({ error: 'Cannot check-in this booking' });
+  }
+
+  booking.checkedIn = true;
+  await booking.save();
+
+  res.json({ ok: true, message: 'Checked in successfully' });
+};
+
+const checkOutBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findByPk(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    // ownership check
+    if (
+      booking.userId !== req.user.id &&
+      !['admin', 'manager'].includes(req.user.role)
+    ) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    if (booking.status !== 'CONFIRMED') {
+      return res.status(400).json({
+        error: 'Only confirmed bookings can be checked out'
+      });
+    }
+
+    if (!booking.checkedIn) {
+      return res.status(400).json({
+        error: 'Cannot check out without checking in'
+      });
+    }
+
+    if (booking.checkedOut) {
+      return res.status(400).json({
+        error: 'Booking already checked out'
+      });
+    }
+
+    // const now = new Date();
+    // const endTime = new Date(booking.endTime);
+
+    // // time validation
+    // if (now < endTime) {
+    //   return res.status(400).json({
+    //     error: 'Check-out allowed only after booking end time'
+    //   });
+    // }
+
+    booking.checkedOut = true;
+    // booking.checkedOutAt = new Date();
+    await booking.save();
+
+    return res.json({
+      ok: true,
+      message: 'Checked out successfully. Room is now free.'
+    });
+  } catch (err) {
+    console.error('Check-out error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+const listDepartmentBookings = async (req, res) => {
+  const { departmentId } = req.query;
+  const user = req.user;
+
+  if (!['admin', 'manager'].includes(user.role)) {
+    return res.status(403).json({ message: 'Access denied' });
+  }
+
+  if (!departmentId) {
+    return res.status(400).json({ message: 'Department is required' });
+  }
+
+  const bookings = await Booking.findAll({
+    where: { departmentId },
+    include: [
+      {
+        model: User,
+        attributes: ['id', 'name', 'email']
+      },
+      {
+        model: Room,
+        attributes: ['id', 'name', 'type']
+      },
+      {
+        model: Resource,
+        attributes: ['id', 'name'],
+        through: { attributes: ['quantity'] }
+      }
+    ],
+    order: [['startTime', 'ASC']]
+  });
+
+  res.json(bookings);
+};
+
+const listDepartments = async (req, res) => {
+   try {
+  const departments = await Department.findAll({
+    attributes: ['id', 'name']
+  });
+
+  res.json(departments);
+    } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to load departments' });
+  }
+};
+
+export default {
+  createBooking,
+  listBookings,
+  getBooking,
+  createRoom,
+  updateRoom,
+  deleteRoom,
+  getCredits,
+  getDepartmentDetails,
+  checkInBooking,
+  checkOutBooking,
+  listDepartmentBookings,
+  listDepartments 
+};

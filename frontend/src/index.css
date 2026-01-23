@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+.input {
+  @apply w-full px-4 py-2 border rounded-lg;
+}
+
+.btn-primary {
+  @apply bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700;
+}
