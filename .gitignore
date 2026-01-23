@@ -13,6 +13,7 @@ cert.pem
 key.pem
 
 node_modules
+.env
 dist
 dist-ssr
 *.local
