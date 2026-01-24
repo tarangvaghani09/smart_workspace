@@ -68,7 +68,7 @@ router.get('/resources', auth, resourceController.listResources);
 ===================================================== */
 
 // Room management
-router.post('/rooms', auth, requireAdmin, adminLimiter, validate(createRoomSchema), bookingController.createRoom);
+router.post('/rooms', auth, requireAdmin, adminLimiter, bookingController.createRoom);
 router.put('/rooms/:id', auth, requireAdmin, adminLimiter, bookingController.updateRoom);
 router.delete('/rooms/:id', auth, requireAdmin, adminLimiter, bookingController.deleteRoom);
 
@@ -79,7 +79,7 @@ router.post('/approve-booking', auth, requireAdmin, adminLimiter, approvalContro
 
 // Resource management
 router.get('/listAllResources', auth, requireAdmin, adminLimiter, resourceController.listAllResources);
-router.post('/resources', auth, requireAdmin, adminLimiter, validate(createResourceSchema), resourceController.createResource);
+router.post('/resources', auth, requireAdmin, adminLimiter, resourceController.createResource);
 router.patch('/resources/:id', auth, requireAdmin, adminLimiter, resourceController.updateResource);
 router.patch('/resources/:id/status', auth, requireAdmin, adminLimiter, resourceController.toggleResourceStatus);
 router.delete('/resources/:id', auth, requireAdmin, adminLimiter, resourceController.deleteResource);

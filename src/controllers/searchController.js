@@ -8,6 +8,7 @@ export default {
     try {
       const { capacity, features, date, startTime, endTime, timezone } = req.body;
 
+      // console.log(capacity, features, date, startTime, endTime, timezone )
       // if (!date || !startTime || !endTime || !timezone) {
       //   return res.status(400).json({ error: 'date, startTime, endTime, and timezone are required' });
       // }

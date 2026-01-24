@@ -544,14 +544,23 @@ components:
     SearchRooms:
       type: object
       properties:
-        capacity: { type: integer }
-        features:
-          type: array
-          items: { type: string }
+        capacity:  
+          type: integer 
+          example: 1
+        # features:
+        #   type: array
+        #   items: { type: string }
+        date:
+          type: string
+          format: date
+          example: "2026-01-24"
         startTime:
           type: string
-          format: date-time
+          example: "11:11 AM"
         endTime:
           type: string
-          format: date-time
+          example: "12:00 PM"
+        timezone:
+          type: string
+          example: "Asia/Kolkata"
 
