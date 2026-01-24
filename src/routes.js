@@ -29,17 +29,17 @@ router.post('/register', loginLimiter, validate(registerSchema), authController.
 /* =====================================================
    USER – BOOKINGS
 ===================================================== */
-router.post('/bookings', auth,  bookingController.createBooking);
+router.post('/bookings', auth, bookingController.createBooking);
 router.get('/bookings', auth, bookingController.listBookings);
 
 
 /* =====================================================
-   ADMIN / MANAGER
+   ADMIN 
 ===================================================== */
 
 // Get all bookings department wise
 router.get('/bookings/department', auth, requireAdmin, adminLimiter, bookingController.listDepartmentBookings);
-router.get('/departments', bookingController.listDepartments );
+router.get('/departments', bookingController.listDepartments);
 
 // ===================================================== */
 
@@ -64,7 +64,7 @@ router.get('/resources', auth, resourceController.listResources);
 
 
 /* =====================================================
-   ADMIN / MANAGER
+   ADMIN 
 ===================================================== */
 
 // Room management

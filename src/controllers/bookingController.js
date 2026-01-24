@@ -344,7 +344,11 @@ const createRoom = async (req, res) => {
   const user = req.user;
 
   // Optional authorization
-  if (!user || !['admin', 'manager'].includes(user.role)) {
+  // if (!user || !['admin', 'manager'].includes(user.role)) {
+  //   return res.status(403).json({ error: 'Not authorized to create rooms' });
+  // }
+
+  if (!user || user.role !== 'admin') {
     return res.status(403).json({ error: 'Not authorized to create rooms' });
   }
 
@@ -415,7 +419,7 @@ const updateRoom = async (req, res) => {
   const { name, type, capacity, creditsPerHour, location, amenities } = req.body;
   const user = req.user;
 
-  if (!user || !['admin', 'manager'].includes(user.role)) {
+  if (!user || user.role !== 'admin') {
     return res.status(403).json({ error: 'Not authorized to update rooms' });
   }
 
@@ -487,7 +491,7 @@ const deleteRoom = async (req, res) => {
     const { id } = req.params;
     const user = req.user;
 
-    if (!user || !['admin', 'manager'].includes(user.role)) {
+    if (!user || user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized to delete rooms' });
     }
 
@@ -635,10 +639,14 @@ const checkOutBooking = async (req, res) => {
     }
 
     // ownership check
-    if (
-      booking.userId !== req.user.id &&
-      !['admin', 'manager'].includes(req.user.role)
-    ) {
+    // if (
+    //   booking.userId !== req.user.id &&
+    //   !['admin', 'manager'].includes(req.user.role)
+    // ) {
+    //   return res.status(403).json({ error: 'Not authorized' });
+    // }
+
+    if (booking.userId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
@@ -688,7 +696,7 @@ const listDepartmentBookings = async (req, res) => {
   const { departmentId } = req.query;
   const user = req.user;
 
-  if (!['admin', 'manager'].includes(user.role)) {
+  if (!user || user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied' });
   }
 
@@ -720,13 +728,13 @@ const listDepartmentBookings = async (req, res) => {
 };
 
 const listDepartments = async (req, res) => {
-   try {
-  const departments = await Department.findAll({
-    attributes: ['id', 'name']
-  });
+  try {
+    const departments = await Department.findAll({
+      attributes: ['id', 'name']
+    });
 
-  res.json(departments);
-    } catch (err) {
+    res.json(departments);
+  } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to load departments' });
   }
@@ -744,5 +752,5 @@ export default {
   checkInBooking,
   checkOutBooking,
   listDepartmentBookings,
-  listDepartments 
+  listDepartments
 };

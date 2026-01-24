@@ -28,7 +28,7 @@ export const loginLimiter = rateLimit({
 });
 
 /**
- * ADMIN / MANAGER LIMIT
+ * ADMIN LIMIT
  * Slightly stricter
  */
 export const adminLimiter = rateLimit({

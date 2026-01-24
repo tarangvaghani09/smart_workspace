@@ -247,6 +247,13 @@ export default function BookingList() {
                     </span>
                   )}
 
+                  {/* credit */}
+                  {b.creditsUsed && (
+                    <span className="px-2 py-0.5 rounded bg-white text-slate-700 border border-slate-200">
+                      💳  {b.creditsUsed} credits
+                    </span>
+                  )}
+
                 </div>
               </div>
 
@@ -274,7 +281,7 @@ export default function BookingList() {
                 )}
 
                 {/* ❌ Hide 3-dot menu after check-in */}
-                {!b.checkedIn && b.status !== 'CANCELLED' && b.status !== 'NO_SHOW' && b.status !== 'REJECTED' &&(
+                {!b.checkedIn && b.status !== 'CANCELLED' && b.status !== 'NO_SHOW' && b.status !== 'REJECTED' && (
                   <button
                     onClick={() =>
                       setOpenMenuId(openMenuId === b.id ? null : b.id)

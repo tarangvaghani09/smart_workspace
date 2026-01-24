@@ -21,6 +21,12 @@ const listResources = async (req, res) => {
 
 const listAllResources = async (req, res) => {
   try {
+    const admin = req.user;
+
+    if (admin.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin only' });
+    }
+    
     const resources = await Resource.findAll({
       attributes: ['id', 'name', 'quantity', 'creditsPerHour', 'isActive'],
       order: [['isActive', 'DESC'], ['name', 'ASC']]
@@ -35,14 +41,14 @@ const listAllResources = async (req, res) => {
 
 /**
  * POST /api/resources
- * Create a new device (ADMIN / MANAGER)
+ * Create a new device (ADMIN)
  */
 const createResource = async (req, res) => {
   try {
     const user = req.user;
     const { name, quantity = 1, creditsPerHour } = req.body;
 
-    if (!user || !['admin', 'manager'].includes(user.role)) {
+if (!user || user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
@@ -88,7 +94,7 @@ const updateResource = async (req, res) => {
     const { id } = req.params;
     const { name, quantity, creditsPerHour } = req.body;
 
-    if (!user || !['admin', 'manager'].includes(user.role)) {
+if (!user || user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
@@ -129,7 +135,7 @@ const toggleResourceStatus = async (req, res) => {
     const user = req.user;
     const { id } = req.params;
 
-    if (!user || !['admin', 'manager'].includes(user.role)) {
+if (!user || user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
@@ -155,7 +161,7 @@ const deleteResource = async (req, res) => {
     const user = req.user;
     const { id } = req.params;
 
-    if (!user || !['admin', 'manager'].includes(user.role)) {
+if (!user || user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 

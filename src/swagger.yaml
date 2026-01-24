@@ -289,7 +289,7 @@ paths:
     get:
       tags: [Admin]
       summary: List all resources (active & inactive)
-      description: Admin / Manager only
+      description: Admin only
       security:
         - bearerAuth: []
       responses:
@@ -299,7 +299,7 @@ paths:
   /resources:
     post:
       tags: [Admin]
-      summary: Create resource (Admin / Manager)
+      summary: Create resource (Admin)
       requestBody:
         content:
           application/json:
