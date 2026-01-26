@@ -98,7 +98,7 @@ export default function Approvals() {
 
                   {b.roomId && b.Room && (
                     <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600">
-                       💺 {b.Room.name}
+                      💺 {b.Room.name}
                     </span>
                   )}
 
@@ -127,6 +127,12 @@ export default function Approvals() {
                   {b.roomId && b.User && (
                     <span className="px-2 py-0.5 rounded bg-cyan-50 text-cyan-600">
                       👤 {b.User.name}
+                    </span>
+                  )}
+
+                  {b.creditsUsed && (
+                    <span className="px-2 py-0.5 rounded bg-white text-slate-700 border border-slate-200">
+                      💳  {b.creditsUsed} credits
                     </span>
                   )}
 

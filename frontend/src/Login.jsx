@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -8,6 +9,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
 
+  const { login } = useAuth(); 
   const navigate = useNavigate();
 
   // Handle login submit
@@ -39,8 +41,7 @@ function Login() {
       }
 
       // Save auth data
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+login( data.token);
       setSuccess('Login successful! Redirecting to dashboard...');
       setTimeout(() => {
         navigate('/dashboard'); // redirect to booking page

@@ -55,6 +55,7 @@ router.post('/bookings/:id/cancel', auth, cancelController.cancelBooking);
 ===================================================== */
 router.get('/credits', auth, bookingController.getCredits);
 router.get('/getDepartmentDetails', auth, bookingController.getDepartmentDetails);
+router.get('/me', auth, authController.getMe);
 
 /* =====================================================
    USER – SEARCH / RESOURCES

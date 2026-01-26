@@ -20,7 +20,7 @@ export const apiLimiter = rateLimit({
  * LOGIN LIMIT (ANTI BRUTE FORCE)
  */
 export const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 5 * 60 * 1000,
   max: 15, // 15 login attempts
   message: {
     error: 'Too many login attempts. Try again after 15 minutes.'

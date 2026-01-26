@@ -2,13 +2,16 @@ import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import BookingList from './BookingList';
 import { Link } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 export default function Dashboard() {
-  const user = JSON.parse(localStorage.getItem('user'));
+  const { user } = useAuth();
   const [me, setMe] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [credits, setCredits] = useState({ availableCredits: 0, lockedCredits: 0 });
   const token = localStorage.getItem('token');
+
+  // const { successMessage, setSuccessMessage } = useAuth();
 
   // 🔹 fetch logged-in user + department
   useEffect(() => {
@@ -83,10 +86,30 @@ export default function Dashboard() {
 
   console.log('Confirmed bookings:', confirmedBookings.length);
   console.log('Up next booking:', upNext);
+
+  // useEffect(() => {
+  //   if (!successMessage) return;
+
+  //   const timer = setTimeout(() => {
+  //     setSuccessMessage(null);
+  //   }, 1500);
+
+  //   return () => clearTimeout(timer);
+  // }, [successMessage]);
+
   return (
     <>
-
-
+      {/* {successMessage && (
+        <div className="mb-4 rounded-lg bg-blue-50 border border-blue-200 p-4 flex justify-between items-center">
+          <span className="text-blue-800">{successMessage.text}</span>
+          <button
+            onClick={() => setSuccessMessage(null)}
+            className="text-xl text-blue-700"
+          > 
+            X  
+          </button>
+        </div>
+      )} */}
       {/* Main Content */}
 
       {/* Header Section */}

@@ -43,15 +43,15 @@ const login = async (req, res) => {
     });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: "Login failed" });
   }
 };
 
 const register = async (req, res) => {
   try {
-    const { name, email, password, department  } = req.body;
+    const { name, email, password, department } = req.body;
 
-    if (!name || !email || !password || !department ) {
+    if (!name || !email || !password || !department) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -60,12 +60,12 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
-        // Find department by NAME
+    // Find department by NAME
     const dept = await Department.findOne({
       where: { name: department }
     });
 
-        if (!dept) {
+    if (!dept) {
       return res.status(400).json({ message: 'Invalid department' });
     }
 
@@ -76,7 +76,7 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       role: 'regular',
-    departmentId: dept.id
+      departmentId: dept.id
     });
 
     res.status(201).json({
@@ -85,7 +85,7 @@ const register = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-          department: dept.name
+        department: dept.name
       }
     });
   } catch (err) {
@@ -94,7 +94,28 @@ const register = async (req, res) => {
   }
 }
 
+export const getMe = async (req, res) => {
+  try {
+    const user = req.user; // already validated
+    // console.log("user", user);
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+    // console.log('get Me endpoint user:', user);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 export default {
   login,
-  register
+  register,
+  getMe
 }

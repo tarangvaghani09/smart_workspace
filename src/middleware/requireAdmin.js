@@ -1,13 +1,11 @@
-export const requireAdmin = (req, res, next) => {
+import { User } from "../models/index.js";
 
-  if (!req.user) {
-    return res.status(401).json({ message: 'Unauthorized' });
+export const requireAdmin = async (req, res, next) => {
+  const user = await User.findByPk(req.user.id);
+
+  if (!user || user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
   }
 
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({
-      error: 'Admin access required'
-    });
-  }
   next();
 };

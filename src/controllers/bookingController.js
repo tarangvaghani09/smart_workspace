@@ -530,7 +530,7 @@ const getCredits = async (req, res) => {
   try {
     const user = req.user;
 
-    console.log('credit', user)
+    // console.log('credit', user)
 
     // 👑 Admins don't have credits
     // if (user.role === 'admin') {
@@ -570,7 +570,7 @@ const getCredits = async (req, res) => {
       });
     }
 
-    console.log('Credits fetched:', credit);
+    // console.log('Credits fetched:', credit);
     res.json({
       availableCredits: credit.availableCredits,
       lockedCredits: credit.lockedCredits,
