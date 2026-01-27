@@ -15,7 +15,7 @@ export default function Dashboard() {
 
   // 🔹 fetch logged-in user + department
   useEffect(() => {
-    fetch('https://localhost:3000/api/getDepartmentDetails', {
+    fetch('https://localhost/api/getDepartmentDetails', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -23,7 +23,7 @@ export default function Dashboard() {
   }, [token]);
 
   useEffect(() => {
-    fetch('https://localhost:3000/api/bookings', {
+    fetch('https://localhost/api/bookings', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -31,7 +31,7 @@ export default function Dashboard() {
   }, [token]);
 
   useEffect(() => {
-    fetch('https://localhost:3000/api/credits', {
+    fetch('https://localhost/api/credits', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())

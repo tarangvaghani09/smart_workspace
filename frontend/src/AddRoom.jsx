@@ -22,7 +22,7 @@ export default function AddRoom() {
     setLoading(true);
 
     try {
-      const res = await fetch('https://localhost:3000/api/rooms', {
+      const res = await fetch('https://localhost/api/rooms', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

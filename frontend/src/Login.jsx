@@ -9,7 +9,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
 
-  const { login } = useAuth(); 
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   // Handle login submit
@@ -19,7 +19,7 @@ function Login() {
     setError({});
 
     try {
-      const res = await fetch('https://localhost:3000/api/login', {
+      const res = await fetch('https://localhost/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -41,7 +41,7 @@ function Login() {
       }
 
       // Save auth data
-login( data.token);
+      login(data.token);
       setSuccess('Login successful! Redirecting to dashboard...');
       setTimeout(() => {
         navigate('/dashboard'); // redirect to booking page

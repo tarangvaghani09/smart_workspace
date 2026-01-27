@@ -6,7 +6,7 @@ import rateLimit from 'express-rate-limit';
  */
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // 500 requests per user/IP
+  max: 50, // 500 requests per user/IP
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
@@ -33,7 +33,7 @@ export const loginLimiter = rateLimit({
  */
 export const adminLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
-  max: 200,
+  max: 50,
   message: {
     error: 'Admin rate limit exceeded.'
   }

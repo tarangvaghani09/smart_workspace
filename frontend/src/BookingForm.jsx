@@ -12,7 +12,7 @@ export default function BookingForm() {
       endTime: new Date(`${e.target.date.value}T${e.target.end.value}:00+05:30`).toISOString()
     };
 
-    const res = await fetch('https://localhost:3000/api/bookings', {
+    const res = await fetch('https://localhost/api/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(payload)
@@ -41,7 +41,7 @@ export default function BookingForm() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-           <div>
+          <div>
             <label className="block text-[10px] uppercase font-black text-gray-400 tracking-widest mb-2">Room Number</label>
             <input name="roomId" type="number" placeholder="ID" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium" required />
           </div>

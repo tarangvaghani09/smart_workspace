@@ -16,7 +16,7 @@ export default function Approvals() {
     setLoading(true);
 
     const res = await fetch(
-      'https://localhost:3000/api/approvals/pending',
+      'https://localhost/api/approvals/pending',
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -34,7 +34,7 @@ export default function Approvals() {
       setActionLoading(bookingId);
 
       const res = await fetch(
-        'https://localhost:3000/api/approve-booking',
+        'https://localhost/api/approve-booking',
         {
           method: 'POST',
           headers: {

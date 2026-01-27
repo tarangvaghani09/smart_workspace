@@ -11,7 +11,7 @@ export default function DepartmentBookingList() {
 
   // 🔹 Load departments
   useEffect(() => {
-    fetch('https://localhost:3000/api/departments')
+    fetch('https://localhost/api/departments')
       .then(res => res.json())
       .then(data => {
         setDepartments(data);
@@ -31,7 +31,7 @@ export default function DepartmentBookingList() {
     setLoading(true);
 
     fetch(
-      `https://localhost:3000/api/bookings/department?departmentId=${selectedDepartment}`,
+      `https://localhost/api/bookings/department?departmentId=${selectedDepartment}`,
       {
         headers: { Authorization: `Bearer ${token}` }
       }

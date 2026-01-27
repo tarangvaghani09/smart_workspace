@@ -18,7 +18,7 @@ function Register() {
 
   /* ---------------- LOAD DEPARTMENTS ---------------- */
   useEffect(() => {
-    fetch('https://localhost:3000/api/departments')
+    fetch('https://localhost/api/departments')
       .then(res => res.json())
       .then(data => {
         console.log(data)
@@ -39,7 +39,7 @@ function Register() {
     setError({});
 
     try {
-      const res = await fetch('https://localhost:3000/api/register', {
+      const res = await fetch('https://localhost/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)

@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import express from 'express';
-import https from 'https';
 import bodyParser from 'body-parser';
 import { sequelize } from './models/index.js';
 import routes from './routes.js';
@@ -14,16 +13,11 @@ import cors from 'cors';
 import { apiLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
-
+app.set('trust proxy', 'loopback');
 app.use(express.static(path.join(process.cwd(), 'src/public')));
 
-const options = {
-  key: fs.readFileSync('./key.pem'),
-  cert: fs.readFileSync('./cert.pem')
-};
-
 app.use(cors({
-  origin: 'https://localhost:5173',
+  origin: 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -69,9 +63,9 @@ async function start() {
     // app.use(bodyParser.json());
     // app.use('/api', routes);
 
-    https.createServer(options, app).listen(PORT, () => {
-      console.log(`HTTPS Server running on https://localhost:${PORT}`);
-      console.log('📄 Swagger docs at https://localhost:3000/docs');
+    app.listen(PORT, () => {
+      console.log(`🚀 Smart Workspace backend listening at http://localhost:${PORT}`);
+      console.log('📄 Swagger docs at http://localhost:3000/docs');
     });
 
     // start cron jobs

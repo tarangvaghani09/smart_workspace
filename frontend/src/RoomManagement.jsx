@@ -62,7 +62,7 @@ export default function RoomManagement() {
     };
 
     try {
-      const res = await fetch('https://localhost:3000/api/search/rooms', {
+      const res = await fetch('https://localhost/api/search/rooms', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ export default function RoomManagement() {
 
     try {
       const res = await fetch(
-        `https://localhost:3000/api/rooms/${editingRoom.id}`,
+        `https://localhost/api/rooms/${editingRoom.id}`,
         {
           method: 'PUT',
           headers: {
@@ -128,7 +128,7 @@ export default function RoomManagement() {
   const deleteRoom = async roomId => {
     if (!window.confirm('Delete this room?')) return;
 
-    await fetch(`https://localhost:3000/api/rooms/${roomId}`, {
+    await fetch(`https://localhost/api/rooms/${roomId}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`

@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    fetch('https://localhost:3000/api/me', {
+    fetch('https://localhost/api/me', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -53,8 +53,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout
-    // , successMessage, setSuccessMessage 
+    <AuthContext.Provider value={{
+      user, loading, login, logout
+      // , successMessage, setSuccessMessage 
     }}>
       {children}
     </AuthContext.Provider>

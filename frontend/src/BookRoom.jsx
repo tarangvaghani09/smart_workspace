@@ -49,7 +49,7 @@ export default function BookRoom({ room = null, onClose }) {
 
   /* ---------------- FETCH CREDITS ---------------- */
   useEffect(() => {
-    fetch('https://localhost:3000/api/credits', {
+    fetch('https://localhost/api/credits', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -61,7 +61,7 @@ export default function BookRoom({ room = null, onClose }) {
 
   /* ---------------- FETCH RESOURCES ---------------- */
   useEffect(() => {
-    fetch('https://localhost:3000/api/resources', {
+    fetch('https://localhost/api/resources', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -148,7 +148,7 @@ export default function BookRoom({ room = null, onClose }) {
       }
 
       const res = await fetch(
-        'https://localhost:3000/api/bookings',
+        'https://localhost/api/bookings',
         {
           method: 'POST',
           headers: {
