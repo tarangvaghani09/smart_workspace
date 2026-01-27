@@ -12,6 +12,7 @@ lerna-debug.log*
 cert.pem
 key.pem
 
+backend
 node_modules
 .env
 dist
