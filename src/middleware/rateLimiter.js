@@ -6,12 +6,16 @@ import rateLimit from 'express-rate-limit';
  */
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // 500 requests per user/IP
+  max: 500, // 500 requests per user/IP
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
+        const retryAfter = Math.ceil(15 * 60); // seconds
+
+    res.set('Retry-After', retryAfter);
     return res.status(429).json({
-      error: 'TOO_MANY_REQUESTS'
+      error: 'TOO_MANY_REQUESTS',
+       retryAfterMinutes: 15
     });
   }
 });
@@ -20,10 +24,11 @@ export const apiLimiter = rateLimit({
  * LOGIN LIMIT (ANTI BRUTE FORCE)
  */
 export const loginLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
+  windowMs: 15 * 60 * 1000,
   max: 15, // 15 login attempts
   message: {
-    error: 'Too many login attempts. Try again after 15 minutes.'
+    error: 'Too many login attempts. Try again after 15 minutes.',
+     retryAfterMinutes: 15
   }
 });
 
@@ -32,8 +37,10 @@ export const loginLimiter = rateLimit({
  * Slightly stricter
  */
 export const adminLimiter = rateLimit({
+  //user ip finder
+  
   windowMs: 10 * 60 * 1000,
-  max: 50,
+  max: 200,
   message: {
     error: 'Admin rate limit exceeded.'
   }

@@ -24,7 +24,17 @@ export const AuthProvider = ({ children }) => {
       }
     })
       .then(res => {
-        if (!res.ok) throw new Error('Unauthorized');
+        // 🚫 RATE LIMIT → let nginx handle it
+        if (res.status === 429) {
+          const retry = res.headers.get("Retry-After") || 900;
+          window.location.href = `/429.html?retry=${retry}`; // show 429.html
+          return;
+        }
+        // 🔐 AUTH ERRORS ONLY
+        if (res.status === 401 || res.status === 403) {
+          throw new Error('Unauthorized');
+        }
+        if (!res.ok) throw new Error('Server error');
         return res.json();
       })
       .then(data => {
@@ -35,7 +45,9 @@ export const AuthProvider = ({ children }) => {
         // });
       })
       .catch(() => {
-        logout(); // invalid / expired token
+        if (err.message === 'Unauthorized') {
+          logout();
+        } // invalid / expired token
       })
       .finally(() => setLoading(false));
   }, [token]);

@@ -13,6 +13,10 @@ import cors from 'cors';
 import { apiLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
+// app.use((req, res, next) => {
+//   console.log("EXPRESS HIT:", req.url);
+//   next();
+// });
 app.set('trust proxy', 'loopback');
 app.use(express.static(path.join(process.cwd(), 'src/public')));
 

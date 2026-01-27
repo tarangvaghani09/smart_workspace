@@ -24,7 +24,36 @@
 <body>
   <div class="box">
     <h1>🚫 Too Many Requests</h1>
-    <p>Please wait and try again later.</p>
+    <p id="msg"></p>
+
+    <a id="back" href="/" style="pointer-events:none;opacity:.5">
+      Go back to login
+    </a>
   </div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+let s = parseInt(params.get("retry")) || 900;
+
+const msg = document.getElementById("msg");
+
+function format(t) {
+  const m = Math.floor(t / 60);
+  const sec = t % 60;
+  return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+}
+
+msg.textContent = `Please wait ${format(s)}.`;
+
+const timer = setInterval(() => {
+  s--;
+  msg.textContent = `Please wait ${format(s)}.`;
+
+  if (s <= 0) {
+    clearInterval(timer);
+    window.location.href = "/";
+  }
+}, 1000);
+</script>
 </body>
 </html>
