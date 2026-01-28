@@ -1,6 +1,6 @@
 # SSL private keys (NEVER commit)
-ssl/*.key
-ssl/*.pem
+conf/ssl/*.key
+conf/ssl/*.pem
 
 # Temporary nginx files
 *.log
