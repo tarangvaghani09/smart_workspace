@@ -1,0 +1,617 @@
+openapi: 3.0.3
+info:
+  title: Workspace Booking API
+  description: >
+    Production API for room & device booking with credits,
+    approvals, recurring bookings, and resource management.
+  version: 1.0.0
+  contact:
+    name: Backend Team
+    email: backend@company.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local
+  - url: https://api.company.com
+    description: Production
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  # - name: Rooms
+  - name: Bookings
+  # - name: Approvals
+  - name: Credits / Department
+  - name: Search
+  - name: Resources
+  - name: Admin
+
+paths:
+
+  /register:
+    post:
+      tags: [Auth]
+      summary: Register new user
+      description: Create a new user account with department assignment
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        201:
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        400:
+          description: Validation error / Email already exists
+        500:
+          description: Server error
+
+  /login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  /me:
+    get:
+      tags: [Auth]
+      summary: Get logged-in user profile
+      description: Returns authenticated user details with optional department
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: User profile fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          description: User not found
+        500:
+          description: Server error
+
+  /bookings:
+    post:
+      tags: [Bookings]
+      summary: Create booking (room / device / both)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBooking'
+      responses:
+        200:
+          description: Booking created
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+    get:
+      tags: [Bookings]
+      summary: List user bookings
+      responses:
+        200:
+          description: List of bookings
+
+  /bookings/{id}:
+    get:
+      tags: [Bookings]
+      summary: Get booking by ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        200:
+          description: Booking details
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /bookings/{id}/check-in:
+    post:
+      tags: [Bookings]
+      summary: Check-in booking
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        200:
+          description: Checked in
+
+  /bookings/{id}/check-out:
+    post:
+      tags: [Bookings]
+      summary: Check-out booking
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        200:
+          description: Checked out
+
+  /bookings/{id}/cancel:
+    post:
+      tags: [Bookings]
+      summary: Cancel booking
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        200:
+          description: Booking cancelled
+
+  # /approvals/pending:
+  #   get:
+  #     tags: [Approvals]
+  #     summary: List pending bookings (Admin)
+  #     responses:
+  #       200:
+  #         description: Pending bookings
+
+  # /approve-booking:
+  #   post:
+  #     tags: [Approvals]
+  #     summary: Approve or reject booking
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/ApproveBooking'
+  #     responses:
+  #       200:
+  #         description: Booking approved / rejected
+
+  /credits:
+    get:
+      tags: [Credits / Department]
+      summary: Get department credits
+      responses:
+        200:
+          description: Credit balance
+
+  # /getDepartmentDetails:
+  #   get:
+  #     tags: [Credits / Department]
+  #     summary: Get department details
+  #     responses:
+  #       200:
+  #         description: Get Department Details
+
+  /search/rooms:
+    post:
+      tags: [Search]
+      summary: Search available rooms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRooms'
+      responses:
+        200:
+          description: Matching rooms
+
+  /resources:
+    get:
+      tags: [Resources]
+      summary: List resources
+      responses:
+        200:
+          description: List of devices
+
+  /rooms:
+    post:
+      tags: [Admin]
+      summary: Create room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomCreate'
+      responses:
+        201:
+          description: Room created
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+  /rooms/{id}:
+    put:
+      tags: [Admin]
+      summary: Update room
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomUpdate'
+      responses:
+        200:
+          description: Room updated
+    delete:
+      tags: [Admin]
+      summary: Delete room
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        200:
+          description: Room deleted
+        400:
+          description: Room has future bookings
+
+  /approvals/pending:
+    get:
+      tags: [Admin]
+      summary: List pending bookings
+      responses:
+        200:
+          description: Pending bookings
+
+  /approve-booking:
+    post:
+      tags: [Admin]
+      summary: Approve or reject booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveBooking'
+      responses:
+        200:
+          description: Booking approved / rejected
+
+  /bookings/department:
+    get:
+      tags: [Admin]
+      summary: List bookings by department
+      parameters:
+        - in: query
+          name: departmentId
+          required: true
+          schema:
+            type: integer
+          description: Department ID
+      responses:
+        200:
+          description: List of bookings for department
+
+  /departments:
+    get:
+      tags: [Admin]
+      summary: List all departments
+      responses:
+        200:
+          description: Show all departments
+
+  /listAllResources:
+    get:
+      tags: [Admin]
+      summary: List all resources (active & inactive)
+      description: Admin only
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of all resources
+
+  /resources:
+    post:
+      tags: [Admin]
+      summary: Create resource (Admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceCreate'
+      responses:
+        201:
+          description: Resource created
+
+  /resources/{id}:
+    patch:
+      tags: [Admin]
+      summary: Update resource
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        200:
+          description: Resource updated
+
+    delete:
+      tags: [Admin]
+      summary: Delete resource
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        200:
+          description: Resource deleted
+
+  /resources/{id}/status:
+    patch:
+      tags: [Admin]
+      summary: Toggle Resource Status
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        200:
+          description: Toggle Resource Status
+
+  # /resources:
+  #   post:
+  #     tags: [Admin]
+  #     summary: Create new resource
+  #     security:
+  #       - bearerAuth: []
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/ResourceCreate'
+  #     responses:
+  #       201:
+  #         description: Resource created
+  #       403:
+  #         $ref: '#/components/responses/Forbidden'
+
+  # /resources/{id}:
+  #   patch:
+  #     tags: [Admin]
+  #     summary: Update resource
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - $ref: '#/components/parameters/IdParam'
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/ResourceUpdate'
+  #     responses:
+  #       200:
+  #         description: Resource updated
+  #       404:
+  #         $ref: '#/components/responses/NotFound'
+
+  # /resources/{id}:
+  #   delete:
+  #     tags: [Admin]
+  #     summary: Disable resource (soft delete)
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - $ref: '#/components/parameters/IdParam'
+  #     responses:
+  #       200:
+  #         description: Resource disabled
+  #       404:
+  #         $ref: '#/components/responses/NotFound'
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  responses:
+    BadRequest:
+      description: Invalid request
+    Unauthorized:
+      description: Unauthorized
+    Forbidden:
+      description: Forbidden
+    NotFound:
+      description: Not found
+
+  schemas:
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          type: object
+          properties:
+            id: { type: integer }
+            name: { type: string }
+            role: { type: string }
+
+    RegisterRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - department
+      properties:
+        name:
+          type: string
+          example: Alice Johnson
+        email:
+          type: string
+          format: email
+          example: alice@example.com
+        password:
+          type: string
+          format: password
+          example: "123456"
+        department:
+          type: string
+          example: Engineering
+
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Registration successful
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 10
+            name:
+              type: string
+              example: Alice Johnson
+            email:
+              type: string
+              example: alice@example.com
+
+    MeResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Alice Admin
+        email:
+          type: string
+          example: alice@example.com
+        role:
+          type: string
+          example: admin
+        departmentId:
+          type: integer
+          nullable: true
+          example: 1
+        department:
+          nullable: true
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: Engineering
+
+    RoomCreate:
+      type: object
+      required: [name, type, capacity, creditsPerHour]
+      properties:
+        name: { type: string }
+        type:
+          type: string
+          enum: [standard, boardroom]
+        capacity: { type: integer }
+        creditsPerHour: { type: integer }
+        location: { type: string }
+        amenities: { type: object }
+
+    RoomUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        capacity: { type: integer }
+        creditsPerHour: { type: integer }
+
+    CreateBooking:
+      type: object
+      required: [title, startTime, endTime]
+      properties:
+        title: { type: string }
+        roomId: { type: integer, nullable: true }
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        bookingType:
+          type: string
+          enum: [ONE_TIME, WEEKLY]
+        weeks:
+          type: integer
+        resources:
+          type: array
+          items:
+            type: object
+            properties:
+              resourceId: { type: integer }
+              quantity: { type: integer }
+
+    ApproveBooking:
+      type: object
+      required: [bookingId, action]
+      properties:
+        bookingId: { type: integer }
+        action:
+          type: string
+          enum: [APPROVE, REJECT]
+
+    ResourceCreate:
+      type: object
+      required: [name, quantity]
+      properties:
+        name: { type: string }
+        quantity: { type: integer }
+
+    SearchRooms:
+      type: object
+      properties:
+        capacity:  
+          type: integer 
+          example: 1
+        # features:
+        #   type: array
+        #   items: { type: string }
+        date:
+          type: string
+          format: date
+          example: "2026-01-24"
+        startTime:
+          type: string
+          example: "11:11 AM"
+        endTime:
+          type: string
+          example: "12:00 PM"
+        timezone:
+          type: string
+          example: "Asia/Kolkata"
+

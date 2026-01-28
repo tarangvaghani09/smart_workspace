@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [me, setMe] = useState(null);
+  // const [me, setMe] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [credits, setCredits] = useState({ availableCredits: 0, lockedCredits: 0 });
   const token = localStorage.getItem('token');
@@ -14,13 +14,13 @@ export default function Dashboard() {
   // const { successMessage, setSuccessMessage } = useAuth();
 
   // 🔹 fetch logged-in user + department
-  useEffect(() => {
-    fetch('https://localhost/api/getDepartmentDetails', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => setMe(data));
-  }, [token]);
+  // useEffect(() => {
+  //   fetch('https://localhost/api/me', {
+  //     headers: { Authorization: `Bearer ${token}` }
+  //   })
+  //     .then(res => res.json())
+  //     .then(data => setMe(data));
+  // }, [token]);
 
   useEffect(() => {
     fetch('https://localhost/api/bookings', {
@@ -162,7 +162,7 @@ export default function Dashboard() {
             <span className="text-sm font-medium text-primary uppercase tracking-wider text-blue-700">Department</span>
             <div class="h-4 w-4 rounded-full bg-primary/20"></div>
           </div>
-          <div className="text-2xl font-display font-bold text-slate-900 truncate">{me?.department?.name || '—'}</div>
+          <div className="text-2xl font-display font-bold text-slate-900 truncate">{user?.department?.name || '—'}</div>
           <p className="text-xs text-primary/80 mt-1 font-medium text-blue-700">Standard Allocation</p>
         </div>
       </div>

@@ -38,13 +38,14 @@ export const AuthProvider = ({ children }) => {
         return res.json();
       })
       .then(data => {
-        setUser(data.user);
+        console.log('Fetched user:', data);
+        setUser(data);
         // setSuccessMessage({
         //   type: 'success',
         //   text: `Welcome, ${data.user.name}👋`
         // });
       })
-      .catch(() => {
+      .catch((err) => {
         if (err.message === 'Unauthorized') {
           logout();
         } // invalid / expired token

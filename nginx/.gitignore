@@ -1,0 +1,11 @@
+# SSL private keys (NEVER commit)
+ssl/*.key
+ssl/*.pem
+
+# Temporary nginx files
+*.log
+*.pid
+
+# OS files
+.DS_Store
+Thumbs.db
