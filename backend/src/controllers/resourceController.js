@@ -21,12 +21,6 @@ const listResources = async (req, res) => {
 
 const listAllResources = async (req, res) => {
   try {
-    const admin = req.user;
-
-    if (admin.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin only' });
-    }
-    
     const resources = await Resource.findAll({
       attributes: ['id', 'name', 'quantity', 'creditsPerHour', 'isActive'],
       order: [['isActive', 'DESC'], ['name', 'ASC']]
@@ -45,12 +39,7 @@ const listAllResources = async (req, res) => {
  */
 const createResource = async (req, res) => {
   try {
-    const user = req.user;
     const { name, quantity = 1, creditsPerHour } = req.body;
-
-if (!user || user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
 
     if (!name || name.trim().length === 0) {
       return res.status(400).json({ error: 'Resource name required' });
@@ -90,13 +79,8 @@ if (!user || user.role !== 'admin') {
  */
 const updateResource = async (req, res) => {
   try {
-    const user = req.user;
     const { id } = req.params;
     const { name, quantity, creditsPerHour } = req.body;
-
-if (!user || user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
 
     const resource = await Resource.findByPk(id);
     if (!resource) {
@@ -132,12 +116,7 @@ if (!user || user.role !== 'admin') {
  */
 const toggleResourceStatus = async (req, res) => {
   try {
-    const user = req.user;
     const { id } = req.params;
-
-if (!user || user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
 
     const resource = await Resource.findByPk(id);
     if (!resource) {
@@ -158,12 +137,7 @@ if (!user || user.role !== 'admin') {
 
 const deleteResource = async (req, res) => {
   try {
-    const user = req.user;
     const { id } = req.params;
-
-if (!user || user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
 
     const resource = await Resource.findByPk(id);
     if (!resource) {

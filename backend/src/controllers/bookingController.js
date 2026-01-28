@@ -341,16 +341,11 @@ const createRoom = async (req, res) => {
   */
 
   const { name, type, capacity, creditsPerHour, location, amenities } = req.body;
-  const user = req.user;
 
   // Optional authorization
   // if (!user || !['admin', 'manager'].includes(user.role)) {
   //   return res.status(403).json({ error: 'Not authorized to create rooms' });
   // }
-
-  if (!user || user.role !== 'admin') {
-    return res.status(403).json({ error: 'Not authorized to create rooms' });
-  }
 
   if (!creditsPerHour || creditsPerHour < 0) {
     return res.status(400).json({
@@ -417,11 +412,6 @@ const createRoom = async (req, res) => {
 const updateRoom = async (req, res) => {
   const { id } = req.params;
   const { name, type, capacity, creditsPerHour, location, amenities } = req.body;
-  const user = req.user;
-
-  if (!user || user.role !== 'admin') {
-    return res.status(403).json({ error: 'Not authorized to update rooms' });
-  }
 
   const room = await Room.findByPk(id);
   if (!room) {
@@ -489,11 +479,6 @@ const updateRoom = async (req, res) => {
 const deleteRoom = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = req.user;
-
-    if (!user || user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized to delete rooms' });
-    }
 
     const room = await Room.findByPk(id);
     if (!room) {
@@ -646,7 +631,7 @@ const checkOutBooking = async (req, res) => {
     //   return res.status(403).json({ error: 'Not authorized' });
     // }
 
-    if (booking.userId !== req.user.id && req.user.role !== 'admin') {
+    if (booking.userId !== req.user.id) {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
@@ -694,11 +679,6 @@ const checkOutBooking = async (req, res) => {
 
 const listDepartmentBookings = async (req, res) => {
   const { departmentId } = req.query;
-  const user = req.user;
-
-  if (!user || user.role !== 'admin') {
-    return res.status(403).json({ message: 'Access denied' });
-  }
 
   if (!departmentId) {
     return res.status(400).json({ message: 'Department is required' });

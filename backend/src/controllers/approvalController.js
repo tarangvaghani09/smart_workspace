@@ -7,12 +7,6 @@ import {
 import emailService from '../services/emailService.js';
 
 export const getPendingBookings = async (req, res) => {
-  const admin = req.user;
-
-  if (admin.role !== 'admin') {
-    return res.status(403).json({ error: 'Admin only' });
-  }
-
   try {
     const pendingBookings = await Booking.findAll({
       where: { status: 'PENDING' },
@@ -48,10 +42,6 @@ export const getPendingBookings = async (req, res) => {
 export const approveBooking = async (req, res) => {
   const { bookingId, action } = req.body;
   const admin = req.user;
-
-  if (admin.role !== 'admin') {
-    return res.status(403).json({ error: 'Admin only' });
-  }
 
   const t = await sequelize.transaction();
   try {
