@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    image: my-backend:latest
+    container_name: backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db  # <-- backend waits for db to start
+
+  frontend:
+    build: ./frontend
+    image: my-frontend:latest
+    container_name: frontend
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+      - frontend
+
+  db:   # <-- this is your MySQL service
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: smart_workspace
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

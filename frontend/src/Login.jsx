@@ -45,7 +45,7 @@ function Login() {
       setSuccess('Login successful! Redirecting to dashboard...');
       setTimeout(() => {
         navigate('/dashboard'); // redirect to booking page
-      }, 1500);
+      }, 500);
     } catch (err) {
       setError({ general: err.message || 'Something went wrong' });
     } finally {

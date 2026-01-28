@@ -159,4 +159,8 @@ npm run dev
 <!-- for(let i=0;i<100;i++){
   fetch("/api/departments")
   .then(r=>console.log(r.status))
+<<<<<<< HEAD
 } -->
+=======
+} -->
+>>>>>>> 47a530d (remov admin fro controler)
