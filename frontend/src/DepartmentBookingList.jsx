@@ -15,7 +15,7 @@ export default function DepartmentBookingList() {
       .then(res => res.json())
       .then(data => {
         setDepartments(data);
-
+console.log('Loaded departments:', data);
         // auto select first department
         if (data.length > 0) {
           setSelectedDepartment(data[0].id.toString());
@@ -38,8 +38,9 @@ export default function DepartmentBookingList() {
     )
       .then(async res => {
         const data = await res.json();
-
+console.log('Loaded bookings for department', selectedDepartment, data);
         if (!res.ok) {
+          console.error('Error loading bookings:', data);
           throw new Error(data.message || 'Failed to load bookings');
         }
 

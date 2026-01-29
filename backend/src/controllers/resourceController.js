@@ -1,8 +1,7 @@
 import { Resource } from '../models/index.js';
 
 /**
- * GET /api/resources
- * List all active resources (devices)
+ * List all active resources
  */
 const listResources = async (req, res) => {
   try {
@@ -34,8 +33,7 @@ const listAllResources = async (req, res) => {
 };
 
 /**
- * POST /api/resources
- * Create a new device (ADMIN)
+ * Create a new resources (ADMIN)
  */
 const createResource = async (req, res) => {
   try {
@@ -74,8 +72,7 @@ const createResource = async (req, res) => {
 };
 
 /**
- * PATCH /api/resources/:id
- * Update device
+ * Update resources
  */
 const updateResource = async (req, res) => {
   try {
@@ -111,7 +108,6 @@ const updateResource = async (req, res) => {
 
 
 /**
- * DELETE /api/resources/:id
  * Soft delete (disable resource)
  */
 const toggleResourceStatus = async (req, res) => {
@@ -134,6 +130,10 @@ const toggleResourceStatus = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+/**
+ * delete resource
+ */
 
 const deleteResource = async (req, res) => {
   try {

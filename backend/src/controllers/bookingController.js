@@ -70,7 +70,7 @@ const isResourceAvailable = async (
     throw new Error('Resource not available');
   }
 
-  // ✅ SUM ONLY booking_resources.quantity
+  // SUM ONLY booking_resources.quantity
   const bookedQty = await BookingResource.sum('quantity', {
     where: {
       resourceId
@@ -678,33 +678,40 @@ const checkOutBooking = async (req, res) => {
 };
 
 const listDepartmentBookings = async (req, res) => {
-  const { departmentId } = req.query;
+  try {
+    const { departmentId } = req.query;
 
-  if (!departmentId) {
-    return res.status(400).json({ message: 'Department is required' });
+    console.log('Listing bookings for department:', departmentId);
+
+    if (!departmentId) {
+      return res.status(400).json({ message: 'Department is required' });
+    }
+
+    const bookings = await Booking.findAll({
+      where: { departmentId },
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'name', 'email']
+        },
+        {
+          model: Room,
+          attributes: ['id', 'name', 'type']
+        },
+        {
+          model: Resource,
+          attributes: ['id', 'name'],
+          through: { attributes: ['quantity'] }
+        }
+      ],
+      order: [['startTime', 'ASC']]
+    });
+    console.log('Department bookings found:', bookings);
+    res.json(bookings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to list departments booking' });
   }
-
-  const bookings = await Booking.findAll({
-    where: { departmentId },
-    include: [
-      {
-        model: User,
-        attributes: ['id', 'name', 'email']
-      },
-      {
-        model: Room,
-        attributes: ['id', 'name', 'type']
-      },
-      {
-        model: Resource,
-        attributes: ['id', 'name'],
-        through: { attributes: ['quantity'] }
-      }
-    ],
-    order: [['startTime', 'ASC']]
-  });
-
-  res.json(bookings);
 };
 
 const listDepartments = async (req, res) => {

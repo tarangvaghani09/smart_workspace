@@ -50,7 +50,7 @@ function startAll() {
 
         const creditsUsed = Math.ceil(hours * room.creditsPerHour);
 
-        // Business rule: FULL refund on NO_SHOW
+        // FULL refund on NO_SHOW
         await refundCredits(
           user.departmentId,
           creditsUsed,

@@ -43,7 +43,7 @@ export default (sequelize) => {
         defaultValue: 'CONFIRMED'
       },
 
-      // 👇 ROOM IS OPTIONAL NOW
+      // ROOM IS OPTIONAL NOW
       roomId: {
         type: DataTypes.INTEGER,
         allowNull: true

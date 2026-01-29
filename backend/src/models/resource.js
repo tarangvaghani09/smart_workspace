@@ -1,5 +1,4 @@
 // models/Resource.js
-import { validate } from 'node-cron';
 import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {

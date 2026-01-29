@@ -132,7 +132,6 @@ export const getMe = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Response stays consistent
     const response = {
       id: user.id,
       name: user.name,
