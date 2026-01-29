@@ -1,6 +1,6 @@
 // cron/index.js
 import cron from 'node-cron';
-import { Booking, Room, User, sequelize } from '../models/index.js';
+import { Booking, BookingRoom, Room, User, sequelize } from '../models/index.js';
 import { Op } from 'sequelize';
 import {
   getOrCreateCredit,
@@ -30,7 +30,15 @@ function startAll() {
           checkedIn: false,
           startTime: { [Op.lt]: threshold }
         },
-        include: [Room, User],
+      include: [
+        {
+          model: BookingRoom,
+          include: [{ model: Room }] 
+        },
+        {
+          model: User
+        }
+      ],
         transaction,
         lock: transaction.LOCK.UPDATE
       });
@@ -39,8 +47,9 @@ function startAll() {
         booking.status = 'NO_SHOW';
         await booking.save({ transaction });
 
-        const user = booking.User;
-        const room = booking.Room;
+      const user = booking.User;
+      const bookingRoom = booking.BookingRoom?.[0]; // take first room
+      const room = bookingRoom?.Room;
 
         if (!user || !room) continue;
 

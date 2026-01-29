@@ -1,5 +1,5 @@
 // controllers/approvalController.js
-import { Booking, Room, Resource, sequelize, Department, User } from '../models/index.js';
+import { Booking, Room, Resource, sequelize, Department, User, BookingRoom } from '../models/index.js';
 import {
   deductLockedCredits,
   releaseLockedCredits
@@ -13,16 +13,26 @@ export const getPendingBookings = async (req, res) => {
       include: [
         {
           model: Department,
-          attributes: ['id', 'name']   
+          attributes: ['id', 'name']
         },
         {
           model: User,
-          attributes: ['id', 'name', 'email'] 
+          attributes: ['id', 'name', 'email']
         },
+
+        // ✅ FIX: load room via BookingRoom
         {
-          model: Room,
-          attributes: ['id', 'name', 'type']
+          model: BookingRoom,
+          attributes: ['id'],
+          include: [
+            {
+              model: Room,
+              attributes: ['id', 'name', 'type']
+            }
+          ]
         },
+
+        // ✅ unchanged resource logic
         {
           model: Resource,
           attributes: ['id', 'name'],
@@ -38,7 +48,6 @@ export const getPendingBookings = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 export const approveBooking = async (req, res) => {
   const { bookingId, action } = req.body;
   const admin = req.user;
@@ -58,6 +67,7 @@ export const approveBooking = async (req, res) => {
         t
       );
       booking.status = 'REJECTED';
+      booking.decidedBy = admin.id;
       await booking.save({ transaction: t });
       await t.commit();
       emailService.sendBookingRejectedEmail(booking.id);
@@ -71,8 +81,8 @@ export const approveBooking = async (req, res) => {
     );
 
     booking.status = 'CONFIRMED';
-    booking.approvedBy = admin.id;
-    booking.approvedAt = new Date();
+    booking.decidedBy = admin.id;
+    // booking.approvedAt = new Date();
     await booking.save({ transaction: t });
 
     await t.commit();

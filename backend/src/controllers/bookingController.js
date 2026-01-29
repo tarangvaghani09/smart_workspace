@@ -4,6 +4,7 @@ import {
   Room,
   Resource,
   BookingResource,
+  BookingRoom,
   DepartmentCredit,
   sequelize,
   User,
@@ -43,14 +44,18 @@ export function calculateCredits({ creditsPerHour }, hours, quantity = 1) {
 const isRoomAvailable = async (roomId, start, end, t) => {
   if (!roomId) return true;
 
-  const conflict = await Booking.findOne({
-    where: {
-      roomId,
-      status: { [Op.in]: ['CONFIRMED', 'PENDING'] },
-      startTime: { [Op.lt]: end },
-      endTime: { [Op.gt]: start },
-      checkedOut: false
-    },
+  const conflict = await BookingRoom.findOne({
+    where: { roomId },
+    include: [{
+      model: Booking,
+      attributes: [],
+      where: {
+        status: { [Op.in]: ['CONFIRMED', 'PENDING'] },
+        checkedOut: false,
+        startTime: { [Op.lt]: end },
+        endTime: { [Op.gt]: start }
+      }
+    }],
     transaction: t
   });
 
@@ -77,7 +82,7 @@ const isResourceAvailable = async (
     },
     include: [{
       model: Booking,
-      attributes: [],   // 🔥 CRITICAL: remove Booking columns
+      attributes: [],   // CRITICAL: remove Booking columns
       where: {
         status: { [Op.in]: ['CONFIRMED', 'PENDING'] },
         checkedOut: false,
@@ -239,7 +244,6 @@ const createBooking = async (req, res) => {
         uid: uuidv4(),
         title,
         bookingType,
-        roomId,
         userId: user.id,
         departmentId: user.departmentId,
         startTime: o.start,
@@ -250,6 +254,15 @@ const createBooking = async (req, res) => {
         recurringGroup: groupId
       }, { transaction: t });
 
+      /* ---------- ROOM CHILD ---------- */
+      if (roomId) {
+        await BookingRoom.create({
+          bookingId: booking.id,
+          roomId
+        }, { transaction: t });
+      }
+
+      /* ---------- RESOURCE CHILD ---------- */
       for (const r of resources) {
         await BookingResource.create({
           bookingId: booking.id,
@@ -257,7 +270,6 @@ const createBooking = async (req, res) => {
           quantity: r.quantity || 1
         }, { transaction: t });
       }
-
       bookings.push(booking);
     }
 
@@ -285,18 +297,19 @@ const createBooking = async (req, res) => {
   }
 };
 
-
 const listBookings = async (req, res) => {
   const user = req.user;
 
   const bookings = await Booking.findAll({
-    where: {
-      userId: user.id
-    },
+    where: { userId: user.id },
+
     include: [
       {
-        model: Room,
-        attributes: ['id', 'name', 'type']
+        model: BookingRoom,
+        include: [{
+          model: Room,
+          attributes: ['id', 'name', 'type']
+        }]
       },
       {
         model: Resource,
@@ -307,9 +320,13 @@ const listBookings = async (req, res) => {
         }
       }
     ],
+
     order: [['startTime', 'ASC']]
   });
-
+  console.log(
+    'bookings',
+    bookings.map(b => b.BookingRoom?.Room)
+  );
   res.json(bookings);
 };
 
@@ -699,10 +716,20 @@ const listDepartmentBookings = async (req, res) => {
           model: User,
           attributes: ['id', 'name', 'email']
         },
+
+        // ✅ FIX: include Room via BookingRoom
         {
-          model: Room,
-          attributes: ['id', 'name', 'type']
+          model: BookingRoom,
+          attributes: ['id'],
+          include: [
+            {
+              model: Room,
+              attributes: ['id', 'name', 'type']
+            }
+          ]
         },
+
+        // ✅ unchanged resource logic
         {
           model: Resource,
           attributes: ['id', 'name'],
@@ -711,6 +738,7 @@ const listDepartmentBookings = async (req, res) => {
       ],
       order: [['startTime', 'ASC']]
     });
+
     res.json(bookings);
   } catch (err) {
     console.error(err);
