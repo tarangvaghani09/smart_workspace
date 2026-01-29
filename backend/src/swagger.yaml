@@ -563,7 +563,7 @@ components:
         endTime:
           type: string
           format: date-time
-        bookingType:
+        recurrenceType:
           type: string
           enum: [ONE_TIME, WEEKLY]
         weeks:

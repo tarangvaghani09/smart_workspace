@@ -8,7 +8,7 @@ export default function BookRoom({ room = null, onClose }) {
   const [hours, setHours] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const [bookingType, setBookingType] = useState('ONE_TIME');
+  const [recurrenceType, setRecurrenceType] = useState('ONE_TIME');
   const [weeks, setWeeks] = useState(4);
 
   /* ---------------- TARGET ---------------- */
@@ -92,7 +92,7 @@ export default function BookRoom({ room = null, onClose }) {
     );
   }, 0);
 
-  const multiplier = bookingType === 'WEEKLY' ? weeks : 1;
+  const multiplier = recurrenceType === 'WEEKLY' ? weeks : 1;
 
   const estimatedCredits =
     (roomCredits + deviceCredits) * multiplier;
@@ -135,8 +135,8 @@ export default function BookRoom({ room = null, onClose }) {
         title,
         startTime: startLocal.toISOString(),
         endTime: endLocal.toISOString(),
-        bookingType,
-        weeks: bookingType === 'WEEKLY' ? weeks : 1
+        recurrenceType,
+        weeks: recurrenceType === 'WEEKLY' ? weeks : 1
       };
 
       if (bookingTarget !== 'DEVICE') {
@@ -240,15 +240,15 @@ export default function BookRoom({ room = null, onClose }) {
           </select>
 
           <select
-            value={bookingType}
-            onChange={e => setBookingType(e.target.value)}
+            value={recurrenceType}
+            onChange={e => setRecurrenceType(e.target.value)}
             className="border p-3 rounded-xl w-full active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
           >
             <option value="ONE_TIME">One Time</option>
             <option value="WEEKLY">Weekly</option>
           </select>
 
-          {bookingType === 'WEEKLY' && (
+          {recurrenceType === 'WEEKLY' && (
             <select
               value={weeks}
               onChange={e => setWeeks(Number(e.target.value))}

@@ -1,5 +1,6 @@
 // models/Booking.js
 import { DataTypes } from 'sequelize';
+import { no } from 'zod/v4/locales';
 
 export default (sequelize) => {
   return sequelize.define(
@@ -20,6 +21,12 @@ export default (sequelize) => {
       title: {
         type: DataTypes.STRING,
         allowNull: false
+      },
+
+      bookingType: {
+        type: DataTypes.ENUM('ROOM', 'RESOURCE', 'ROOM_RESOURCE'),
+        allowNull: false,
+        defaultValue: 'ROOM_RESOURCE'
       },
 
       startTime: {

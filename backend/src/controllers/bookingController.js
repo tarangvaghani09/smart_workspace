@@ -101,7 +101,7 @@ const createBooking = async (req, res) => {
       startTime,
       endTime,
       title,
-      bookingType = 'ONE_TIME',
+      recurrenceType = 'ONE_TIME',
       weeks = 1
     } = req.body;
 
@@ -124,7 +124,7 @@ const createBooking = async (req, res) => {
       const start = new Date(startTime);
       const end = new Date(endTime);
 
-      if (bookingType === 'WEEKLY') {
+      if (recurrenceType === 'WEEKLY') {
         start.setDate(start.getDate() + i * 7);
         end.setDate(end.getDate() + i * 7);
       }
@@ -205,8 +205,14 @@ const createBooking = async (req, res) => {
       }
     }
 
+    /* ---------- BOOKING TYPE ---------- */
+    let bookingType = 'ROOM_RESOURCE';
+
+    if (roomId && resources.length === 0) bookingType = 'ROOM';
+    if (!roomId && resources.length > 0) bookingType = 'RESOURCE';
+
     /* ---------- CREATE BOOKINGS ---------- */
-    const groupId = bookingType === 'WEEKLY' ? uuidv4() : null;
+    const groupId = recurrenceType === 'WEEKLY' ? uuidv4() : null;
     const bookings = [];
 
     for (const o of occurrences) {
@@ -232,6 +238,7 @@ const createBooking = async (req, res) => {
       const booking = await Booking.create({
         uid: uuidv4(),
         title,
+        bookingType,
         roomId,
         userId: user.id,
         departmentId: user.departmentId,
@@ -239,7 +246,7 @@ const createBooking = async (req, res) => {
         endTime: o.end,
         status: requiresApproval ? 'PENDING' : 'CONFIRMED',
         creditsUsed: bookingCredits,
-        isRecurring: bookingType === 'WEEKLY',
+        isRecurring: recurrenceType === 'WEEKLY',
         recurringGroup: groupId
       }, { transaction: t });
 
@@ -681,8 +688,6 @@ const listDepartmentBookings = async (req, res) => {
   try {
     const { departmentId } = req.query;
 
-    console.log('Listing bookings for department:', departmentId);
-
     if (!departmentId) {
       return res.status(400).json({ message: 'Department is required' });
     }
@@ -706,7 +711,6 @@ const listDepartmentBookings = async (req, res) => {
       ],
       order: [['startTime', 'ASC']]
     });
-    console.log('Department bookings found:', bookings);
     res.json(bookings);
   } catch (err) {
     console.error(err);
