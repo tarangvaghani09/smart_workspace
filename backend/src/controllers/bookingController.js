@@ -14,7 +14,8 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
 import emailService from '../services/emailService.js';
-import { lockCredits, deductCredits , refundCredits } from '../services/creditService.js';
+import { lockCredits, deductCredits, refundCredits } from '../services/creditService.js';
+import { createBookingSchema } from '../validators/booking.schema.js';
 
 export function hoursBetween(start, end) {
   return Math.max(
@@ -97,19 +98,32 @@ const isResourceAvailable = async (
 };
 
 const createBooking = async (req, res) => {
+
+  /* ---------- ZOD VALIDATION — FIRST THING ---------- */
+
+  const parsed = createBookingSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    return res.status(400).json({
+      error: 'Validation failed',
+      errors: parsed.error.flatten().fieldErrors
+    });
+  }
+
+  /* ---------- USE SANITIZED DATA FROM ZOD ---------- */
+  const {
+    roomId = null,
+    resources = [],
+    startTime,
+    endTime,
+    title,
+    recurrenceType = 'ONE_TIME',
+    weeks = 1
+  } = parsed.data;
+
   const t = await sequelize.transaction();
 
   try {
-    const {
-      roomId = null,
-      resources = [],
-      startTime,
-      endTime,
-      title,
-      recurrenceType = 'ONE_TIME',
-      weeks = 1
-    } = req.body;
-
     const user = req.user;
 
     if (!user.departmentId) {
@@ -364,37 +378,24 @@ const createRoom = async (req, res) => {
     }
   */
 
-  const { name, type, capacity, creditsPerHour, location, amenities } = req.body;
+  const result = createRoomSchema.safeParse(req.body);
+
+  if (!result.success) {
+    return res.status(400).json({
+      message: 'Validation failed',
+      errors: result.error.issues.map(issue => ({
+        field: issue.path.join('.'),
+        message: issue.message
+      }))
+    });
+  }
+
+  const { name, type, capacity, creditsPerHour, location, amenities } = result.data;
 
   // Optional authorization
   // if (!user || !['admin', 'manager'].includes(user.role)) {
   //   return res.status(403).json({ error: 'Not authorized to create rooms' });
   // }
-
-  if (!creditsPerHour || creditsPerHour < 0) {
-    return res.status(400).json({
-      error: 'Valid creditsPerHour is required'
-    });
-  }
-
-  // Validation
-  if (!name || !type || !capacity) {
-    return res.status(400).json({
-      error: 'name, type and capacity are required'
-    });
-  }
-
-  if (!['standard', 'boardroom'].includes(type)) {
-    return res.status(400).json({
-      error: "type must be either 'standard' or 'boardroom'"
-    });
-  }
-
-  if (capacity <= 0) {
-    return res.status(400).json({
-      error: 'capacity must be greater than 0'
-    });
-  }
 
   const transaction = await sequelize.transaction();
 
@@ -435,30 +436,24 @@ const createRoom = async (req, res) => {
 
 const updateRoom = async (req, res) => {
   const { id } = req.params;
-  const { name, type, capacity, creditsPerHour, location, amenities } = req.body;
+
+  // Zod safeParse
+  const parseResult = updateRoomSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({
+      message: 'Validation failed',
+      errors: parseResult.error.issues.map(issue => ({
+        field: issue.path.join('.'),
+        message: issue.message
+      }))
+    });
+  }
+
+  const { name, type, capacity, creditsPerHour, location, amenities } = parseResult.data;
 
   const room = await Room.findByPk(id);
   if (!room) {
     return res.status(404).json({ error: 'Room not found' });
-  }
-
-  // Validation
-  if (type && !['standard', 'boardroom'].includes(type)) {
-    return res.status(400).json({
-      error: "type must be either 'standard' or 'boardroom'"
-    });
-  }
-
-  if (capacity !== undefined && capacity <= 0) {
-    return res.status(400).json({
-      error: 'capacity must be greater than 0'
-    });
-  }
-
-  if (creditsPerHour !== undefined && creditsPerHour < 0) {
-    return res.status(400).json({
-      error: 'creditsPerHour must be >= 0'
-    });
   }
 
   const transaction = await sequelize.transaction();

@@ -1,4 +1,5 @@
 import { Resource } from '../models/index.js';
+import { createResourceSchema, updateResourceSchema } from '../validators/resource.schema.js';
 
 /**
  * List all active resources
@@ -37,19 +38,19 @@ const listAllResources = async (req, res) => {
  */
 const createResource = async (req, res) => {
   try {
-    const { name, quantity = 1, creditsPerHour } = req.body;
+    const result = createResourceSchema.safeParse(req.body);
 
-    if (!name || name.trim().length === 0) {
-      return res.status(400).json({ error: 'Resource name required' });
+    if (!result.success) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: result.error.issues.map(issue => ({
+          field: issue.path.join('.'),
+          message: issue.message
+        }))
+      });
     }
 
-    if (quantity <= 0) {
-      return res.status(400).json({ error: 'Quantity must be >= 1' });
-    }
-
-    if (creditsPerHour <= 0) {
-      return res.status(400).json({ error: 'CreditsPerHour must be >= 1' });
-    }
+    const { name, quantity, creditsPerHour, isActive } = result.data;
 
     const existing = await Resource.findOne({ where: { name } });
     if (existing) {
@@ -76,20 +77,30 @@ const createResource = async (req, res) => {
  */
 const updateResource = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, quantity, creditsPerHour } = req.body;
+    const parseResult = updateResourceSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: parseResult.error.issues.map(issue => ({
+          field: issue.path.join('.'),
+          message: issue.message
+        }))
+      });
+    }
 
-    const resource = await Resource.findByPk(id);
+    const { name, quantity, creditsPerHour } = parseResult.data;
+
+    const resource = await Resource.findByPk(req.params.id);
     if (!resource) {
       return res.status(404).json({ error: 'Resource not found' });
     }
 
-    if (quantity !== undefined && quantity < 1) {
-      return res.status(400).json({ error: 'Quantity must be >= 1' });
-    }
-
-    if (creditsPerHour !== undefined && creditsPerHour < 0) {
-      return res.status(400).json({ error: 'Credits must be >= 0' });
+    // Prevent duplicate name
+    if (name && name !== resource.name) {
+      const existing = await Resource.findOne({ where: { name } });
+      if (existing) {
+        return res.status(409).json({ error: 'Resource with this name already exists' });
+      }
     }
 
     await resource.update({

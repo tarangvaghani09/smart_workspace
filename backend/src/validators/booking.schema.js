@@ -1,83 +1,37 @@
 import { z } from 'zod';
 
-export const bookingSchema = z.object({
-  // uid: z.string().min(1, { message: 'UID is required' }),
-
+export const createBookingSchema = z.object({
   title: z
-    .string({
-      required_error: 'Title is required',
-      invalid_type_error: 'Title must be a string'
-    })
+    .string({ required_error: 'Title is required' })
     .trim()
-    .nonempty('Title cannot be empty')
-    .min(2, 'Title must be at least 2 characters')
-    .max(255, 'Title cannot exceed 255 characters'),
+    .min(3, 'Title must be at least 3 characters')
+    .max(255),
 
-  // startTime: z
-  //   .string()
-  //   .or(z.date())
-  //   .refine(
-  //     (val) => !isNaN(new Date(val).getTime()),
-  //     { message: 'Invalid start time' }
-  //   ),
+  roomId: z.number().int().positive().nullable().optional(),
 
-  // endTime: z
-  //   .string()
-  //   .or(z.date())
-  //   .refine(
-  //     (val) => !isNaN(new Date(val).getTime()),
-  //     { message: 'Invalid end time' }
-  //   ),
+  resources: z.array(
+    z.object({
+      resourceId: z.number().int().positive(),
+      quantity: z.number().int().positive().default(1)
+    })
+  ).default([]),
 
-//   status: z.enum(['PENDING', 'CONFIRMED', 'REJECTED', 'CANCELLED', 'NO_SHOW']).default('CONFIRMED'),
+  startTime: z.coerce.date(),
+  endTime: z.coerce.date(),
 
-//   roomId: z.number().int().positive().optional().nullable(),
-
-//   userId: z.number().int().positive({ message: 'User ID must be a positive integer' }),
-
-//   departmentId: z.number().int().positive().optional().nullable(),
-
-//   creditsUsed: z.number().int().nonnegative().default(0),
-
-//   approvedBy: z.number().int().positive().optional().nullable(),
-
-//   approvedAt: z
-//     .string()
-//     .or(z.date())
-//     .optional()
-//     .nullable()
-//     .refine(
-//       (val) => !val || !isNaN(new Date(val).getTime()),
-//       { message: 'Invalid approvedAt date' }
-//     ),
-
-//   isRecurring: z.boolean().default(false),
-
-//   recurringGroup: z.string().optional().nullable(),
-
-//   checkedIn: z.boolean().default(false),
-//   checkedOut: z.boolean().default(false)
-// })
-// .superRefine((data, ctx) => {
-//   // Ensure endTime > startTime
-//   if (data.startTime && data.endTime) {
-//     const start = new Date(data.startTime);
-//     const end = new Date(data.endTime);
-//     if (end <= start) {
-//       ctx.addIssue({
-//         code: z.ZodIssueCode.custom,
-//         path: ['endTime'],
-//         message: 'endTime must be after startTime'
-//       });
-//     }
-//   }
-
-  // Ensure recurringGroup is provided if isRecurring is true
-  // if (data.isRecurring && !data.recurringGroup) {
-  //   ctx.addIssue({
-  //     code: z.ZodIssueCode.custom,
-  //     path: ['recurringGroup'],
-  //     message: 'recurringGroup is required for recurring bookings'
-  //   });
-  // }
-});
+  recurrenceType: z.enum(['ONE_TIME', 'WEEKLY']).default('ONE_TIME'),
+  weeks: z.number().int().min(1).max(52).default(1)
+})
+  .refine(
+    (data) => data.endTime > data.startTime,
+    {
+      message: 'End time must be after start time',
+      path: ['endTime']
+    }
+  )
+  .refine(
+    (data) => data.roomId || data.resources.length > 0,
+    {
+      message: 'Booking must include a room or at least one resource'
+    }
+  );

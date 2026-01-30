@@ -457,7 +457,6 @@ components:
           properties:
             id: { type: integer }
             name: { type: string }
-            role: { type: string }
 
     RegisterRequest:
       type: object
