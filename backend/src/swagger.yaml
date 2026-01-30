@@ -119,6 +119,14 @@ paths:
         200:
           description: List of bookings
 
+  /departments:
+    get:
+      tags: [Bookings]
+      summary: List all departments
+      responses:
+        200:
+          description: Show all departments
+
   /bookings/{id}:
     get:
       tags: [Bookings]
@@ -297,14 +305,6 @@ paths:
       responses:
         200:
           description: List of bookings for department
-
-  /departments:
-    get:
-      tags: [Admin]
-      summary: List all departments
-      responses:
-        200:
-          description: Show all departments
 
   /listAllResources:
     get:

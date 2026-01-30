@@ -14,7 +14,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
 import emailService from '../services/emailService.js';
-import { lockCredits, deductCredits } from '../services/creditService.js';
+import { lockCredits, deductCredits , refundCredits } from '../services/creditService.js';
 
 export function hoursBetween(start, end) {
   return Math.max(
@@ -535,62 +535,6 @@ const deleteRoom = async (req, res) => {
   }
 };
 
-const getCredits = async (req, res) => {
-  try {
-    const user = req.user;
-
-    // console.log('credit', user)
-
-    // 👑 Admins don't have credits
-    // if (user.role === 'admin') {
-    //   return res.json({
-    //     availableCredits: 0,
-    //     lockedCredits: 0,
-    //     month: null,
-    //     year: null,
-    //     message: 'Admins do not use department credits'
-    //   });
-    // }
-
-    if (!user.departmentId) {
-      return res.status(400).json({
-        error: 'User does not belong to a department'
-      });
-    }
-
-    const now = new Date();
-    const month = now.getMonth() + 1;
-    const year = now.getFullYear();
-
-    const credit = await DepartmentCredit.findOne({
-      where: {
-        departmentId: user.departmentId,
-        month,
-        year
-      }
-    });
-
-    if (!credit) {
-      return res.json({
-        availableCredits: 0,
-        lockedCredits: 0,
-        month,
-        year
-      });
-    }
-
-    // console.log('Credits fetched:', credit);
-    res.json({
-      availableCredits: credit.availableCredits,
-      lockedCredits: credit.lockedCredits,
-      month,
-      year
-    });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
-
 // const getDepartmentDetails = async (req, res) => {
 //   const user = await User.findByPk(req.user.id, {
 //     include: {
@@ -701,6 +645,42 @@ const checkOutBooking = async (req, res) => {
   }
 };
 
+const cancelBooking = async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    const booking = await Booking.findByPk(req.params.id, { transaction: t });
+
+    if (!booking || booking.status !== 'CONFIRMED') {
+      throw new Error('Only confirmed bookings can be cancelled');
+    }
+
+    // Only owner can cancel
+    if (booking.userId !== req.user.id) {
+      throw new Error('Not authorized to cancel this booking');
+    }
+
+    const hoursBefore =
+      (new Date(booking.startTime) - new Date()) / (1000 * 60 * 60);
+
+    // 90% refund if cancelled 48+ hours before
+    if (hoursBefore >= 48) {
+      // const refund = Math.floor(booking.creditsUsed * 0.9);
+      const rawRefund = Math.floor(booking.creditsUsed * 0.9);
+      const refund = Math.max(1, rawRefund);
+      await refundCredits(booking.departmentId, refund, t);
+    }
+
+    booking.status = 'CANCELLED';
+    await booking.save({ transaction: t });
+
+    await t.commit();
+    res.json({ ok: true });
+  } catch (err) {
+    await t.rollback();
+    res.status(400).json({ error: err.message });
+  }
+};
+
 const listDepartmentBookings = async (req, res) => {
   try {
     const { departmentId } = req.query;
@@ -766,10 +746,10 @@ export default {
   createRoom,
   updateRoom,
   deleteRoom,
-  getCredits,
   // getDepartmentDetails,
   checkInBooking,
   checkOutBooking,
+  cancelBooking,
   listDepartmentBookings,
   listDepartments
 };

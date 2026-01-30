@@ -6,7 +6,7 @@ import { FaSpinner } from "react-icons/fa";
 export default function ProtectedRoute({ children, adminOnly = false }) {
   const { user, loading } = useAuth();
 
-  if (loading) return <div className='flex items-center justify-center h-screen text-xl font-semibold'><FaSpinner size={50}/></div>; // optional spinner
+  if (loading) return <div className='flex items-center justify-center h-screen text-xl font-semibold'><FaSpinner className='animate-spin' size={50}/></div>; 
 
   if (!user) return <Navigate to="/" />;
 
