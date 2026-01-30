@@ -28,10 +28,10 @@ function Login() {
       const data = await res.json();
       if (!res.ok) {
         if (data.errors) {
-          // map array → object
           const fieldErrors = {};
-          data.errors.forEach(err => {
-            fieldErrors[err.field] = err.message;
+
+          Object.entries(data.errors).forEach(([field, messages]) => {
+            fieldErrors[field] = messages[0];
           });
           setError(fieldErrors);
         } else {
@@ -44,7 +44,7 @@ function Login() {
       login(data.token);
       setSuccess('Login successful! Redirecting to dashboard...');
       setTimeout(() => {
-        navigate('/dashboard'); // redirect to booking page
+        navigate('/dashboard');
       }, 500);
     } catch (err) {
       setError({ general: err.message || 'Something went wrong' });

@@ -162,7 +162,7 @@ export default function BookRoom({ room = null, onClose }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      // 👇 check status of first booking
+      // check status of first booking
       const status = data.bookings?.[0]?.status;
 
       if (status === 'PENDING') {
@@ -328,10 +328,12 @@ export default function BookRoom({ room = null, onClose }) {
                 {estimatedCredits}
               </p>
             </div>
-            <div>
+            <div className='flex flex-col items-end'>
               <p className="text-xs">Balance</p>
               <p className="font-bold">
                 {credits.availableCredits}
+              </p>
+              <p className="text-xs text-amber-600">🔒 {credits.lockedCredits} locked in pending
               </p>
             </div>
           </div>
@@ -345,13 +347,17 @@ export default function BookRoom({ room = null, onClose }) {
             </button>
             <button
               onClick={submit}
-              disabled={loading}
-              className={`px-5 py-2 rounded-xl font-semibold text-white ${loading
+              disabled={loading || insufficientCredits}
+              className={`px-5 py-2 rounded-xl font-semibold text-white ${loading || insufficientCredits
                 ? 'bg-gray-400 cursor-not-allowed'
                 : 'bg-blue-600 hover:bg-blue-700 cursor-pointer transition-colors'
                 }`}
             >
-              {loading ? 'Booking...' : 'Confirm'}
+              {insufficientCredits
+                ? 'Not enough credits'
+                : loading
+                  ? 'Booking...'
+                  : 'Confirm'}
             </button>
           </div>
           {/* </div> */}

@@ -1,7 +1,7 @@
 // Search controller
 import { Room, Booking, BookingRoom } from '../models/index.js';
 import { Op } from 'sequelize';
-import moment from 'moment-timezone'; 
+import moment from 'moment-timezone';
 
 export default {
   async searchRooms(req, res) {
@@ -47,29 +47,35 @@ export default {
       /* ---------- AVAILABILITY CHECK ---------- */
       const roomIds = rooms.map(r => r.id);
 
-      const overlappingBookings = await BookingRoom.findAll({
+      const overlappingBookings = await Booking.findAll({
         where: {
-          roomId: { [Op.in]: roomIds }
+          status: { [Op.in]: ['CONFIRMED', 'PENDING'] },
+          checkedOut: false,
+          [Op.and]: [
+            { startTime: { [Op.lt]: utcEnd } },
+            { endTime: { [Op.gt]: utcStart } }
+          ]
         },
-        include: [{
-          model: Booking,
-          attributes: [],
-          where: {
-            status: { [Op.in]: ['CONFIRMED', 'PENDING'] },
-            checkedOut: false,
-            [Op.and]: [
-              { startTime: { [Op.lt]: utcEnd } },
-              { endTime: { [Op.gt]: utcStart } }
-            ]
+        include: [
+          {
+            model: Room,
+            attributes: ['id'],
+            where: {
+              id: { [Op.in]: roomIds }
+            },
+            through: { attributes: [] }
           }
-        }],
-        attributes: ['roomId']
+        ]
       });
 
       /* ---------- EXCLUDE UNAVAILABLE ROOMS ---------- */
-      const unavailableRoomIds = new Set(
-        overlappingBookings.map(b => b.roomId)
-      );
+      const unavailableRoomIds = new Set();
+
+      for (const booking of overlappingBookings) {
+        for (const room of booking.Rooms) {
+          unavailableRoomIds.add(room.id);
+        }
+      }
 
       const availableRooms = rooms.filter(
         r => !unavailableRoomIds.has(r.id)

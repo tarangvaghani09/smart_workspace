@@ -6,7 +6,7 @@ import {
   getOrCreateCredit,
   refundCredits
 } from '../services/creditService.js';
-import emailService from '../services/emailService.js'; 
+import emailService from '../services/emailService.js';
 
 const GHOST_GRACE_MINUTES = Number(process.env.GHOST_GRACE_MINUTES || 15);
 
@@ -30,15 +30,16 @@ function startAll() {
           checkedIn: false,
           startTime: { [Op.lt]: threshold }
         },
-      include: [
-        {
-          model: BookingRoom,
-          include: [{ model: Room }] 
-        },
-        {
-          model: User
-        }
-      ],
+        include: [
+          {
+            model: Room,
+            attributes: ['id', 'name', 'creditsPerHour'],
+            through: { attributes: [] }
+          },
+          {
+            model: User
+          }
+        ],
         transaction,
         lock: transaction.LOCK.UPDATE
       });
@@ -47,9 +48,9 @@ function startAll() {
         booking.status = 'NO_SHOW';
         await booking.save({ transaction });
 
-      const user = booking.User;
-      const bookingRoom = booking.BookingRoom?.[0]; // take first room
-      const room = bookingRoom?.Room;
+        const user = booking.User;
+        const bookingRoom = booking.Rooms?.[0]; // take first room
+        const room = bookingRoom?.Room;
 
         if (!user || !room) continue;
 

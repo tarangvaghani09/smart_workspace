@@ -79,11 +79,24 @@ Resource.belongsToMany(Booking, {
 });
 
 // Booking ↔ Room (1:1 via booking_rooms)
-Booking.hasOne(BookingRoom, { foreignKey: 'bookingId' });
-BookingRoom.belongsTo(Booking, { foreignKey: 'bookingId' });
+// Booking.hasOne(BookingRoom, { foreignKey: 'bookingId' });
+// BookingRoom.belongsTo(Booking, { foreignKey: 'bookingId' });
 
-Room.hasMany(BookingRoom, { foreignKey: 'roomId' });
-BookingRoom.belongsTo(Room, { foreignKey: 'roomId' });
+// Room.hasMany(BookingRoom, { foreignKey: 'roomId' });
+// BookingRoom.belongsTo(Room, { foreignKey: 'roomId' });
+
+// Booking ↔ Room (via booking_rooms)
+Booking.belongsToMany(Room, {
+  through: BookingRoom,
+  foreignKey: 'bookingId',
+  otherKey: 'roomId'
+});
+
+Room.belongsToMany(Booking, {
+  through: BookingRoom,
+  foreignKey: 'roomId',
+  otherKey: 'bookingId'
+});
 
 // Booking ↔ Resource (M:N)
 Booking.hasMany(BookingResource, { foreignKey: 'bookingId' });

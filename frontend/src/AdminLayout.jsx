@@ -53,12 +53,12 @@ export default function AdminLayout({ children }) {
         <Link to="/admin/resources" className={tabClass('/admin/resources')}>
           Resource Management
         </Link>
-        <Link to="/admin/requests" className={tabClass('/admin/requests')}>
+        {/* <Link to="/admin/requests" className={tabClass('/admin/requests')}>
           Admin Requests
         </Link>
         <Link to="/admin/users" className={tabClass('/admin/users')}>
           User Management
-        </Link>
+        </Link> */}
       </div>
 
       {/* TAB CONTENT */}

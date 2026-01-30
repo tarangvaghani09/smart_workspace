@@ -90,20 +90,20 @@ export default function Approvals() {
                 <p className="text-sm text-gray-500 flex flex-wrap gap-3 mt-2  items-center">
                   {/* 🏢 ROOM */}
 
-                  {b.roomId && b.Department && (
+                  {b.Department && (
                     <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-600">
                       📍 {b.Department.name}
                     </span>
                   )}
 
-                  {b.roomId && b.Room && (
+             {b.Rooms?.length > 0 && (
                     <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600">
-                      💺 {b.Room.name}
+                      💺 {b.Rooms[0].name}
                     </span>
                   )}
 
                   {/* 🔌 DEVICE ONLY */}
-                  {!b.roomId && b.Resources?.length > 0 && (
+                  { b.Resources?.length > 0 && (
                     <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-600">
                       🔌 {b.Resources.map(r =>
                         `${r.name}${r.BookingResource?.quantity > 1
@@ -113,18 +113,7 @@ export default function Approvals() {
                     </span>
                   )}
 
-                  {/* 🏢 + 🔌 ROOM + DEVICE */}
-                  {b.roomId && b.Resources?.length > 0 && (
-                    <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-600">
-                      🔌 {b.Resources.map(r =>
-                        `${r.name}${r.BookingResource?.quantity > 1
-                          ? ` ×${r.BookingResource.quantity}`
-                          : ''}`
-                      ).join(', ')}
-                    </span>
-                  )}
-
-                  {b.roomId && b.User && (
+                  {b.User && (
                     <span className="px-2 py-0.5 rounded bg-cyan-50 text-cyan-600">
                       👤 {b.User.name}
                     </span>

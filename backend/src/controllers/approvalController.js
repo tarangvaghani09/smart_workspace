@@ -10,6 +10,7 @@ export const getPendingBookings = async (req, res) => {
   try {
     const pendingBookings = await Booking.findAll({
       where: { status: 'PENDING' },
+
       include: [
         {
           model: Department,
@@ -20,14 +21,9 @@ export const getPendingBookings = async (req, res) => {
           attributes: ['id', 'name', 'email']
         },
         {
-          model: BookingRoom,
-          attributes: ['id'],
-          include: [
-            {
-              model: Room,
-              attributes: ['id', 'name', 'type']
-            }
-          ]
+          model: Room,
+          attributes: ['id', 'name', 'type'],
+          through: { attributes: [] } // hides booking_rooms
         },
         {
           model: Resource,
@@ -35,6 +31,7 @@ export const getPendingBookings = async (req, res) => {
           through: { attributes: ['quantity'] }
         }
       ],
+
       order: [['createdAt', 'ASC']]
     });
 
@@ -44,6 +41,7 @@ export const getPendingBookings = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 export const approveBooking = async (req, res) => {
   const { bookingId, action } = req.body;
   const admin = req.user;

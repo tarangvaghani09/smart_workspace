@@ -16,6 +16,7 @@ import { Op } from 'sequelize';
 import emailService from '../services/emailService.js';
 import { lockCredits, deductCredits, refundCredits } from '../services/creditService.js';
 import { createBookingSchema } from '../validators/booking.schema.js';
+import { createRoomSchema, updateRoomSchema } from '../validators/room.schema.js';
 
 export function hoursBetween(start, end) {
   return Math.max(
@@ -31,17 +32,17 @@ export function calculateCredits({ creditsPerHour }, hours, quantity = 1) {
 const isRoomAvailable = async (roomId, start, end, t) => {
   if (!roomId) return true;
 
-  const conflict = await BookingRoom.findOne({
-    where: { roomId },
+  const conflict = await Booking.findOne({
+    where: {
+      status: { [Op.in]: ['CONFIRMED', 'PENDING'] },
+      checkedOut: false,
+      startTime: { [Op.lt]: end },
+      endTime: { [Op.gt]: start }
+    },
     include: [{
-      model: Booking,
-      attributes: [],
-      where: {
-        status: { [Op.in]: ['CONFIRMED', 'PENDING'] },
-        checkedOut: false,
-        startTime: { [Op.lt]: end },
-        endTime: { [Op.gt]: start }
-      }
+      model: Room,
+      where: { id: roomId },
+      through: { attributes: [] }
     }],
     transaction: t
   });
@@ -302,11 +303,9 @@ const listBookings = async (req, res) => {
 
     include: [
       {
-        model: BookingRoom,
-        include: [{
-          model: Room,
-          attributes: ['id', 'name', 'type']
-        }]
+        model: Room,
+        attributes: ['id', 'name', 'type'],
+        through: { attributes: [] }
       },
       {
         model: Resource,
@@ -320,10 +319,7 @@ const listBookings = async (req, res) => {
 
     order: [['startTime', 'ASC']]
   });
-  console.log(
-    'bookings',
-    bookings.map(b => b.BookingRoom?.Room)
-  );
+
   res.json(bookings);
 };
 
@@ -486,10 +482,16 @@ const deleteRoom = async (req, res) => {
 
     const hasFutureBookings = await Booking.findOne({
       where: {
-        roomId: id,
         startTime: { [Op.gt]: new Date() },
         status: { [Op.in]: ['CONFIRMED', 'PENDING'] }
-      }
+      },
+      include: [
+        {
+          model: Room,
+          where: { id },
+          through: { attributes: [] }
+        }
+      ]
     });
 
     if (hasFutureBookings) {
@@ -672,14 +674,9 @@ const listDepartmentBookings = async (req, res) => {
           attributes: ['id', 'name', 'email']
         },
         {
-          model: BookingRoom,
-          attributes: ['id'],
-          include: [
-            {
-              model: Room,
-              attributes: ['id', 'name', 'type']
-            }
-          ]
+          model: Room,
+          attributes: ['id', 'name', 'type'],
+          through: { attributes: [] }
         },
         {
           model: Resource,

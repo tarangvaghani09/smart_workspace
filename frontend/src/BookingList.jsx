@@ -30,7 +30,7 @@ export default function BookingList() {
     })
       .then(res => res.json())
       .then(setBookings);
-      //  .then(console.log.bind(console, 'bookings'), setBookings);
+    //  .then(console.log.bind(console, 'bookings'), setBookings);
   }, []);
 
   const cancelBooking = async (bookingId) => {
@@ -221,25 +221,14 @@ export default function BookingList() {
                   </span>
 
                   {/* 🏢 ROOM */}
-                  {b.roomId && b.Room && (
+                  {b.Rooms?.length > 0 && (
                     <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600">
-                      📍 {b.Room.name}
+                      📍 {b.Rooms[0].name}
                     </span>
                   )}
 
-                  {/* 🔌 DEVICE ONLY */}
-                  {!b.roomId && b.Resources?.length > 0 && (
-                    <span className="px-2 py-0.5 rounded bg-orange-50 text-orange-600">
-                      🔌 {b.Resources.map(r =>
-                        `${r.name}${r.BookingResource?.quantity > 1
-                          ? ` × ${r.BookingResource.quantity}`
-                          : ''}`
-                      ).join(', ')}
-                    </span>
-                  )}
-
-                  {/* 🏢 + 🔌 ROOM + DEVICE */}
-                  {b.roomId && b.Resources?.length > 0 && (
+                  {/* 🔌 DEVICE */}
+                  {b.Resources?.length > 0 && (
                     <span className="px-2 py-0.5 rounded bg-orange-50 text-orange-600">
                       🔌 {b.Resources.map(r =>
                         `${r.name}${r.BookingResource?.quantity > 1

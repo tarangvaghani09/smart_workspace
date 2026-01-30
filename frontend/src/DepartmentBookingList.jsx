@@ -7,6 +7,8 @@ export default function DepartmentBookingList() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [status, setStatus] = useState('');
+
   const token = localStorage.getItem('token');
 
   // 🔹 Load departments
@@ -23,7 +25,7 @@ export default function DepartmentBookingList() {
       .catch(console.error);
   }, []);
 
-  // 🔹 Load bookings when department changes
+  // Load bookings when department changes
   useEffect(() => {
     if (!selectedDepartment) return;
 
@@ -46,6 +48,7 @@ export default function DepartmentBookingList() {
       })
       .then(data => {
         setBookings(Array.isArray(data) ? data : []);
+        console.log('Loaded bookings:', data);
         setLoading(false);
       })
       .catch(err => {
@@ -59,6 +62,12 @@ export default function DepartmentBookingList() {
   const selectedDept = departments.find(
     d => d.id.toString() === selectedDepartment
   );
+
+  const statuses = Array.from(new Set(bookings.map(b => b.status)));
+
+  const filteredBookings = status
+    ? bookings.filter(b => b.status === status)
+    : bookings;
 
   return (
     <AdminLayout>
@@ -75,20 +84,29 @@ export default function DepartmentBookingList() {
             </p>
           </div>
 
-          <select
-            value={selectedDepartment}
-            onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer"
-          >
-            {/* <option value="">Select Department</option> */}
-            {departments?.map(d => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="flex items-center gap-4">
 
+            <select value={status} onChange={e => setStatus(e.target.value)} className='border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer' >
+              <option value="">All Status</option>
+              {statuses.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+
+            <select
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              className="border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer"
+            >
+              {/* <option value="">Select Department</option> */}
+              {departments?.map(d => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
         {/* LOADING */}
         {loading && (
           <p className="text-gray-400 font-medium">Loading bookings...</p>
@@ -96,7 +114,7 @@ export default function DepartmentBookingList() {
 
         {/* LIST */}
         <div className="space-y-5">
-          {bookings?.map(b => (
+          {filteredBookings?.map(b => (
             <div
               key={b.id}
               className="group relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-indigo-200"
@@ -106,7 +124,9 @@ export default function DepartmentBookingList() {
                 {/* LEFT */}
                 <div className="space-y-1">
                   <h3 className="font-semibold text-gray-900 text-lg">
-                    {b.Room?.name || 'Resource Booking'}
+                    {b.Rooms?.length > 0
+                      ? b.Rooms[0].name
+                      : 'Resource Booking'}
                   </h3>
 
                   <p className="text-xs text-gray-500 font-medium">
@@ -121,7 +141,7 @@ export default function DepartmentBookingList() {
                   {b.Resources?.length > 0 && (
                     <p className="text-xs font-semibold text-blue-600 mt-2">
                       🔌 {b.Resources.map(r =>
-                        `${r.name}${r.BookingResource.quantity > 1
+                        `${r.name}${r.BookingResource?.quantity > 1
                           ? ` × ${r.BookingResource.quantity}`
                           : ''}`
                       ).join(', ')}
