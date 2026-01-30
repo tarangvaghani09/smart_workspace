@@ -24,20 +24,6 @@ export function hoursBetween(start, end) {
   );
 }
 
-// export function calculateCost(room, hours) {
-//   return {
-//     credits: hours * room.creditsPerHour,
-//     // price: hours * room.pricePerHour
-//   };
-// }
-
-// export function calculateResourceCost(resource, qty, hours) {
-//   return {
-//     credits: hours * resource.creditsPerHour * qty,
-//     // price: hours * resource.pricePerHour * qty
-//   };
-// }
-
 export function calculateCredits({ creditsPerHour }, hours, quantity = 1) {
   return hours * creditsPerHour * quantity;
 }
@@ -99,8 +85,6 @@ const isResourceAvailable = async (
 
 const createBooking = async (req, res) => {
 
-  /* ---------- ZOD VALIDATION — FIRST THING ---------- */
-
   const parsed = createBookingSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -110,7 +94,6 @@ const createBooking = async (req, res) => {
     });
   }
 
-  /* ---------- USE SANITIZED DATA FROM ZOD ---------- */
   const {
     roomId = null,
     resources = [],
@@ -400,7 +383,6 @@ const createRoom = async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    // Prevent duplicate room names
     const existing = await Room.findOne({
       where: { name },
       transaction
@@ -437,7 +419,6 @@ const createRoom = async (req, res) => {
 const updateRoom = async (req, res) => {
   const { id } = req.params;
 
-  // Zod safeParse
   const parseResult = updateRoomSchema.safeParse(req.body);
   if (!parseResult.success) {
     return res.status(400).json({
@@ -459,7 +440,6 @@ const updateRoom = async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    // prevent duplicate room name
     if (name && name !== room.name) {
       const existing = await Room.findOne({
         where: { name },
@@ -691,8 +671,6 @@ const listDepartmentBookings = async (req, res) => {
           model: User,
           attributes: ['id', 'name', 'email']
         },
-
-        // ✅ FIX: include Room via BookingRoom
         {
           model: BookingRoom,
           attributes: ['id'],
@@ -703,8 +681,6 @@ const listDepartmentBookings = async (req, res) => {
             }
           ]
         },
-
-        // ✅ unchanged resource logic
         {
           model: Resource,
           attributes: ['id', 'name'],

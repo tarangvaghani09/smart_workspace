@@ -2,14 +2,20 @@ import jwt from 'jsonwebtoken';
 import { Department, User } from '../models/index.js';
 import department from '../models/department.js';
 import bcrypt from 'bcryptjs';
+import { loginSchema, registerSchema } from '../validators/auth.schema.js';
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const parsed = loginSchema.safeParse(req.body);
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password required' });
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: parsed.error.flatten().fieldErrors
+      });
     }
+
+    const { email, password } = parsed.data;
 
     const user = await User.findOne({ where: { email } });
 
@@ -49,11 +55,16 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
   try {
-    const { name, email, password, department } = req.body;
+    const parsed = registerSchema.safeParse(req.body);
 
-    if (!name || !email || !password || !department) {
-      return res.status(400).json({ message: 'All fields are required' });
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: parsed.error.flatten().fieldErrors
+      });
     }
+
+    const { name, email, password, department } = parsed.data;
 
     const exists = await User.findOne({ where: { email } });
     if (exists) {

@@ -19,8 +19,6 @@ export const getPendingBookings = async (req, res) => {
           model: User,
           attributes: ['id', 'name', 'email']
         },
-
-        // ✅ FIX: load room via BookingRoom
         {
           model: BookingRoom,
           attributes: ['id'],
@@ -31,8 +29,6 @@ export const getPendingBookings = async (req, res) => {
             }
           ]
         },
-
-        // ✅ unchanged resource logic
         {
           model: Resource,
           attributes: ['id', 'name'],

@@ -7,7 +7,7 @@ const getCredits = async (req, res) => {
 
     // console.log('credit', user)
 
-    // 👑 Admins don't have credits
+    //  Admins don't have credits
     // if (user.role === 'admin') {
     //   return res.json({
     //     availableCredits: 0,

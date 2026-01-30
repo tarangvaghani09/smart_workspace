@@ -1,9 +1,8 @@
 import { Resource } from '../models/index.js';
 import { createResourceSchema, updateResourceSchema } from '../validators/resource.schema.js';
 
-/**
- * List all active resources
- */
+/*--------------- List all active resources -------------*/
+
 const listResources = async (req, res) => {
   try {
     const resources = await Resource.findAll({
@@ -19,6 +18,8 @@ const listResources = async (req, res) => {
   }
 };
 
+/*--------------- List all resources (ADMIN) -------------*/
+
 const listAllResources = async (req, res) => {
   try {
     const resources = await Resource.findAll({
@@ -33,9 +34,8 @@ const listAllResources = async (req, res) => {
   }
 };
 
-/**
- * Create a new resources (ADMIN)
- */
+/*--------------- Create a new resources (ADMIN) -------------*/
+
 const createResource = async (req, res) => {
   try {
     const result = createResourceSchema.safeParse(req.body);
@@ -50,7 +50,7 @@ const createResource = async (req, res) => {
       });
     }
 
-    const { name, quantity, creditsPerHour, isActive } = result.data;
+    const { name, quantity, creditsPerHour } = result.data;
 
     const existing = await Resource.findOne({ where: { name } });
     if (existing) {
@@ -72,9 +72,7 @@ const createResource = async (req, res) => {
   }
 };
 
-/**
- * Update resources
- */
+/*--------------- Update resources -------------*/
 const updateResource = async (req, res) => {
   try {
     const parseResult = updateResourceSchema.safeParse(req.body);
@@ -118,9 +116,8 @@ const updateResource = async (req, res) => {
 };
 
 
-/**
- * Soft delete (disable resource)
- */
+/*--------------- Soft delete (disable resource) -------------*/
+
 const toggleResourceStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -142,9 +139,7 @@ const toggleResourceStatus = async (req, res) => {
   }
 };
 
-/**
- * delete resource
- */
+/*--------------- delete resource -------------*/
 
 const deleteResource = async (req, res) => {
   try {
@@ -155,7 +150,7 @@ const deleteResource = async (req, res) => {
       return res.status(404).json({ error: 'Resource not found' });
     }
 
-    await resource.destroy(); // 🔥 permanently delete
+    await resource.destroy();
 
     res.json({
       ok: true,

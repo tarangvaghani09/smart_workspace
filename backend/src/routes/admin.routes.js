@@ -15,8 +15,8 @@ const router = express.Router();
 router.get('/bookings/department', auth, requireAdmin, adminLimiter, bookingController.listDepartmentBookings);
 
 // Room management
-router.post('/rooms', auth, requireAdmin, adminLimiter,  validate(createRoomSchema), bookingController.createRoom);
-router.put('/rooms/:id', auth, requireAdmin, adminLimiter, validate(updateRoomSchema), bookingController.updateRoom);
+router.post('/rooms', auth, requireAdmin, adminLimiter, bookingController.createRoom);
+router.put('/rooms/:id', auth, requireAdmin, adminLimiter, bookingController.updateRoom);
 router.delete('/rooms/:id', auth, requireAdmin, adminLimiter, bookingController.deleteRoom);
 
 // Approval workflow
@@ -26,8 +26,8 @@ router.post('/approve-booking', auth, requireAdmin, adminLimiter, approvalContro
 
 // Resource management
 router.get('/listAllResources', auth, requireAdmin, adminLimiter, resourceController.listAllResources);
-router.post('/resources', auth, requireAdmin, adminLimiter, validate(createResourceSchema), resourceController.createResource);
-router.patch('/resources/:id', auth, requireAdmin, adminLimiter, validate(updateResourceSchema), resourceController.updateResource);
+router.post('/resources', auth, requireAdmin, adminLimiter, resourceController.createResource);
+router.patch('/resources/:id', auth, requireAdmin, adminLimiter, resourceController.updateResource);
 router.patch('/resources/:id/status', auth, requireAdmin, adminLimiter, resourceController.toggleResourceStatus);
 router.delete('/resources/:id', auth, requireAdmin, adminLimiter, resourceController.deleteResource);
 
