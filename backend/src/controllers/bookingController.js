@@ -44,7 +44,8 @@ const isRoomAvailable = async (roomId, start, end, t) => {
       where: { id: roomId },
       through: { attributes: [] }
     }],
-    transaction: t
+    transaction: t,
+    lock: t.LOCK.UPDATE   // 🔐 THIS IS THE KEY
   });
 
   return !conflict;
@@ -78,7 +79,8 @@ const isResourceAvailable = async (
         endTime: { [Op.gt]: start }
       }
     }],
-    transaction: t
+    transaction: t,
+    lock: t.LOCK.UPDATE   // 🔐 lock resource row
   });
 
   return (bookedQty || 0) + qty <= resource.quantity;
@@ -170,7 +172,7 @@ const createBooking = async (req, res) => {
 
       // ROOM credits
       if (roomId) {
-        room = room || await Room.findByPk(roomId, { transaction: t });
+        room = room || await Room.findByPk(roomId, { transaction: t, lock: t.LOCK.UPDATE });  //prevents simultaneous approval/credit logic conflicts
         if (!room) throw new Error('Room not found');
 
         totalCredits += calculateCredits(room, hours, 1);
