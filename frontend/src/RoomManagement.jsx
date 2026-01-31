@@ -41,6 +41,10 @@ export default function RoomManagement() {
 
   const now = new Date();
 
+    const maxDate = new Date();
+  maxDate.setFullYear(maxDate.getFullYear() + 1);
+  const maxDateString = maxDate.toISOString().split('T')[0];
+
   // Format date as YYYY-MM-DD
   const toAmPm = (time24) => {
     const [h, m] = time24.split(':').map(Number);
@@ -124,6 +128,24 @@ export default function RoomManagement() {
     }
   };
 
+  /* ================= TOGGLE ================= */
+  const toggleRoom = async room => {
+    if (!window.confirm(`${room.isActive ? 'Disable' : 'Enable'} this room?`)) return;
+
+    await fetch(`https://localhost/api/rooms/${room.id}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        isActive: !room.isActive
+      })
+    });
+
+    fetchRooms();
+  };
+
   /* ================= DELETE ================= */
   const deleteRoom = async roomId => {
     if (!window.confirm('Delete this room?')) return;
@@ -162,6 +184,15 @@ export default function RoomManagement() {
     return matchesSearch && matchesCapacity && matchesMinPrice && matchesMaxPrice && matchesType;
   });
 
+    const activeRooms = filteredRooms.filter(r => r.isActive);
+  const inactiveRooms = filteredRooms.filter(r => !r.isActive);
+
+  useEffect(() => {
+    if (startTime > endTime) {
+      setEndTime(startTime);
+    }
+  }, [startTime]);
+
   return (
     <AdminLayout>
       <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300">
@@ -190,6 +221,8 @@ export default function RoomManagement() {
           <input
             type="date"
             value={selectedDate}
+                        min={new Date().toISOString().split('T')[0]}
+            max={maxDateString}
             onChange={(e) => setSelectedDate(e.target.value)}
             onFocus={(e) => e.target.showPicker()}
             className="border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
@@ -240,56 +273,130 @@ export default function RoomManagement() {
         </div>
 
         {/* 🧱 ROOM CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {filteredRooms.map(room => (
-            <div
-              key={room.id}
-              className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl cursor-pointer transition duration-200"
-            >
-              <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                <svg className="opacity-10 absolute inset-0 w-full h-full object-cover" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1"></path>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#grid)"></rect>
-                </svg>
-                <div className="bg-white/90 px-4 py-2 rounded-full text-sm font-semibold">
-                  {room.type === 'boardroom' ? 'Boardroom' : 'Standard Room'}
+        <div className="space-y-10">
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {activeRooms.map(room => (
+              <div
+                key={room.id}
+                className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl cursor-pointer transition duration-200"
+              >
+                <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                  <svg className="opacity-10 absolute inset-0 w-full h-full object-cover" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1"></path>
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)"></rect>
+                  </svg>
+                  <div className="bg-white/90 px-4 py-2 rounded-full text-sm font-semibold">
+                    {room.type === 'boardroom' ? 'Boardroom' : 'Standard Room'}
+                  </div>
+                </div>
+
+                <div className="p-5">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold">{room.name}</h3>
+                    <span className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
+                      ₹{room.creditsPerHour}/hr
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-gray-500 mt-1">
+                    Capacity: {room.capacity}
+                  </p>
+
+                  <div className="flex gap-4 mt-6">
+                    <button
+                      onClick={() => startEdit(room)}
+                      className="group flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-700 font-medium rounded-xl transition-all duration-200 hover:bg-indigo-600 hover:text-white hover:shadow-lg hover:shadow-indigo-200 active:scale-95 cursor-pointer"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => toggleRoom(room)}
+                      className="flex-1 bg-amber-50 text-amber-600 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-amber-600 hover:text-white hover:shadow-lg hover:shadow-amber-200 active:scale-95 cursor-pointer"
+                    >
+                      Disable
+                    </button>
+
+                    <button
+                      onClick={() => deleteRoom(room.id)}
+                      className="group flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 font-medium rounded-xl transition-all duration-200 hover:bg-rose-600 hover:text-white hover:shadow-lg hover:shadow-rose-200 active:scale-95 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
 
-              <div className="p-5">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-bold">{room.name}</h3>
-                  <span className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
-                    ₹{room.creditsPerHour}/hr
-                  </span>
-                </div>
-
-                <p className="text-sm text-gray-500 mt-1">
-                  Capacity: {room.capacity}
-                </p>
-
-                <div className="flex gap-4 mt-6">
-                  <button
-                    onClick={() => startEdit(room)}
-                    className="group flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-700 font-medium rounded-xl transition-all duration-200 hover:bg-indigo-600 hover:text-white hover:shadow-lg hover:shadow-indigo-200 active:scale-95 cursor-pointer"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => deleteRoom(room.id)}
-                    className="group flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 font-medium rounded-xl transition-all duration-200 hover:bg-rose-600 hover:text-white hover:shadow-lg hover:shadow-rose-200 active:scale-95 cursor-pointer"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+          {/* ➖ DIVIDER (only if inactive exist) */}
+          {inactiveRooms.length > 0 && (
+            <div className="flex items-center gap-4">
+              <hr className="flex-1 border-gray-300" />
+              <span className="text-sm text-gray-400 font-medium">
+                Disabled Rooms
+              </span>
+              <hr className="flex-1 border-gray-300" />
             </div>
-          ))}
+          )}
+
+          {/* 🚫 INACTIVE ROOMS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {inactiveRooms.map(room => (
+              <div
+                key={room.id}
+                className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl cursor-pointer transition duration-200"
+              >
+                <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                  <svg className="opacity-10 absolute inset-0 w-full h-full object-cover" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1"></path>
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)"></rect>
+                  </svg>
+                  <div className="bg-white/90 px-4 py-2 rounded-full text-sm font-semibold">
+                    {room.type === 'boardroom' ? 'Boardroom' : 'Standard Room'}
+                  </div>
+                </div>
+
+                <div className="p-5">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold">{room.name}</h3>
+                    <span className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
+                      ₹{room.creditsPerHour}/hr
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-gray-500 mt-1">
+                    Capacity: {room.capacity}
+                  </p>
+
+                  <div className="flex gap-4 mt-6">
+                    <button
+                      onClick={() => toggleRoom(room)}
+                      className="group flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-green-100 text-green-700 font-medium rounded-xl transition-all duration-200 hover:bg-green-600 hover:text-white hover:shadow-lg hover:shadow-green-200 active:scale-95 cursor-pointer"
+                    >
+                      Enable
+                    </button>
+
+                    <button
+                      onClick={() => deleteRoom(room.id)}
+                      className="group flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 font-medium rounded-xl transition-all duration-200 hover:bg-rose-600 hover:text-white hover:shadow-lg hover:shadow-rose-200 active:scale-95 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
           {filteredRooms.length === 0 && (
             <p className="text-gray-500">No rooms found.</p>

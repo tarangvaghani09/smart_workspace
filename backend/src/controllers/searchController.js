@@ -1,5 +1,5 @@
 // Search controller
-import { Room, Booking, BookingRoom } from '../models/index.js';
+import { Room, Booking, BookingRoom, User } from '../models/index.js';
 import { Op } from 'sequelize';
 import moment from 'moment-timezone';
 
@@ -20,7 +20,11 @@ export default {
       const utcEnd = convertToUTC(date, endTime, timezone);
 
       /* ---------- BASE FILTER ---------- */
+      const user = await User.findByPk(req.user.id);
       const where = {};
+      if (!user || user.role !== 'admin') {
+        where.isActive = 1;
+      }
       if (capacity) where.capacity = { [Op.gte]: capacity };
       if (features && features.length) where.features = { [Op.not]: null };
 

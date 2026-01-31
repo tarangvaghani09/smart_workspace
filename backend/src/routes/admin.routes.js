@@ -17,6 +17,7 @@ router.get('/bookings/department', auth, requireAdmin, adminLimiter, bookingCont
 // Room management
 router.post('/rooms', auth, requireAdmin, adminLimiter, bookingController.createRoom);
 router.put('/rooms/:id', auth, requireAdmin, adminLimiter, bookingController.updateRoom);
+router.patch('/rooms/:id/status', auth, requireAdmin, adminLimiter, bookingController.toggleRoomStatus);
 router.delete('/rooms/:id', auth, requireAdmin, adminLimiter, bookingController.deleteRoom);
 
 // Approval workflow

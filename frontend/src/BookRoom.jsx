@@ -232,7 +232,7 @@ export default function BookRoom({ room = null, onClose }) {
           <select
             value={bookingTarget}
             onChange={e => setBookingTarget(e.target.value)}
-            className="border p-3 rounded-xl w-full active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
+            className="border p-3 rounded-xl w-full active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300 cursor-pointer"
           >
             {room && <option value="ROOM">Room Only</option>}
             <option value="DEVICE">Device Only</option>
@@ -242,7 +242,7 @@ export default function BookRoom({ room = null, onClose }) {
           <select
             value={recurrenceType}
             onChange={e => setRecurrenceType(e.target.value)}
-            className="border p-3 rounded-xl w-full active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
+            className="border p-3 rounded-xl w-full active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300 cursor-pointer"
           >
             <option value="ONE_TIME">One Time</option>
             <option value="WEEKLY">Weekly</option>
@@ -252,7 +252,7 @@ export default function BookRoom({ room = null, onClose }) {
             <select
               value={weeks}
               onChange={e => setWeeks(Number(e.target.value))}
-              className="border p-3 rounded-xl w-full active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
+              className="border p-3 rounded-xl w-full active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300 cursor-pointer"
             >
               <option value={2}>2 Weeks</option>
               <option value={4}>4 Weeks</option>
@@ -264,7 +264,7 @@ export default function BookRoom({ room = null, onClose }) {
           <select
             value={hours}
             onChange={e => setHours(Number(e.target.value))}
-            className="border p-3 rounded-xl w-full active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
+            className="border p-3 rounded-xl w-full active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300 cursor-pointer"
           >
             {[1, 2, 3, 4].map(h => (
               <option key={h} value={h}>{h} Hour</option>

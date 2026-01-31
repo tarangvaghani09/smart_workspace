@@ -414,6 +414,29 @@ const createRoom = async (req, res) => {
   }
 };
 
+/*--------------- Soft delete (disable room) -------------*/
+
+const toggleRoomStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const room = await Room.findByPk(id);
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+
+    await room.update({ isActive: !room.isActive });
+    res.json({
+      ok: true,
+      message: 'Room toggled successfully'
+    });
+  } catch (err) {
+    console.error('Toggle room error:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 const updateRoom = async (req, res) => {
   const { id } = req.params;
 
@@ -715,6 +738,7 @@ export default {
   getBooking,
   createRoom,
   updateRoom,
+  toggleRoomStatus,
   deleteRoom,
   // getDepartmentDetails,
   checkInBooking,
