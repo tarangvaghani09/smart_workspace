@@ -8,9 +8,19 @@ import emailService from '../services/emailService.js';
 
 export const getPendingBookings = async (req, res) => {
   try {
-    const pendingBookings = await Booking.findAll({
-      where: { status: 'PENDING' },
+    const { departmentId } = req.query;
 
+    const where = {
+      status: 'PENDING'
+    };
+
+    // Apply department filter
+    if (departmentId) {
+      where.departmentId = Number(departmentId);
+    }
+
+    const pendingBookings = await Booking.findAll({
+      where,
       include: [
         {
           model: Department,
