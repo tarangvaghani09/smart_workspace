@@ -57,7 +57,7 @@ export default function BookingList() {
       return;
     }
 
-    alert('✅ Booking cancelled');
+    // alert('✅ Booking cancelled');
 
     // refresh list
     setBookings(prev =>
@@ -90,7 +90,7 @@ export default function BookingList() {
       return;
     }
 
-    alert('✅ Checked in successfully');
+    // alert('✅ Checked in successfully');
 
     // update UI
     setBookings(prev =>
@@ -123,7 +123,7 @@ export default function BookingList() {
       return;
     }
 
-    alert('✅ Checked out successfully');
+    // alert('✅ Checked out successfully');
 
     setBookings(prev =>
       prev.map(b =>
