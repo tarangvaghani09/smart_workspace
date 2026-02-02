@@ -18,16 +18,11 @@ export default function SearchRooms() {
   const [date, setDate] = useState(moment().format('YYYY-MM-DD'));
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [features, setFeatures] = useState({
-    projector: false,
-    whiteboard: false,
-    video: false,
-  });
 
   // fetch rooms whenever backend-related filters change
   useEffect(() => {
     fetchRooms();
-  }, [date, startTime, endTime, features]);
+  }, [date, startTime, endTime]);
 
   // apply frontend filters
   useEffect(() => {
@@ -57,19 +52,9 @@ export default function SearchRooms() {
     }
   }, [startTime]);
   const fetchRooms = async () => {
-    // prepare selected features for backend
-    const selectedFeatures = Object.entries(features)
-      .filter(([_, value]) => value)
-      .map(([key]) => {
-        if (key === 'video') return 'Video Conf';
-        if (key === 'whiteboard') return 'Whiteboard';
-        if (key === 'projector') return 'Projector';
-        return key;
-      });
 
     const payload = {
       date,
-      features: selectedFeatures,
       capacity: capacity ? Number(capacity) : undefined,
       timezone: moment.tz.guess(),
       ...(startTime && { startTime }),
@@ -124,10 +109,6 @@ export default function SearchRooms() {
     }
 
     setFilteredRooms(data);
-  };
-
-  const handleFeatureChange = feature => {
-    setFeatures(prev => ({ ...prev, [feature]: !prev[feature] }));
   };
 
   return (
@@ -237,41 +218,6 @@ export default function SearchRooms() {
               onChange={e => setCapacity(e.target.value)}
               className="mt-1 w-full border rounded-xl border-gray-300 text-gray-600 p-2 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
             />
-          </div>
-
-          {/* AMENITIES */}
-          <div>
-            <label className="text-xs font-semibold text-gray-500">
-              AMENITIES
-            </label>
-            <div className="mt-2 space-y-2 text-sm text-gray-600">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={features.projector}
-                  onChange={() => handleFeatureChange('projector')}
-                />
-                Projector
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={features.whiteboard}
-                  onChange={() => handleFeatureChange('whiteboard')}
-                />
-                Whiteboard
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={features.video}
-                  onChange={() => handleFeatureChange('video')}
-                />
-                Video Conferencing
-              </label>
-            </div>
           </div>
         </aside>
 
