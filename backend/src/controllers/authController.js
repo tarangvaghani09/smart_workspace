@@ -17,7 +17,7 @@ const login = async (req, res) => {
 
     const { email, password } = parsed.data;
 
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email:email.trim() } });
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -80,12 +80,13 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Invalid department' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
+      // password: hashedPassword,
+      password,
       role: 'regular',
       departmentId: dept.id
     });

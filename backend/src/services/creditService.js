@@ -110,6 +110,39 @@ export const refundCredits = async (departmentId, amount, transaction) => {
   await credit.save({ transaction });
 }
 
+/**
+ * Used for monthly credit reset
+ */
+
+export const resetMonthlyCredits = async (departmentId, transaction) => {
+  const { month, year } = currentMonthYear();
+
+  const credit = await DepartmentCredit.findOne({
+    where: { departmentId, month, year },
+    transaction,
+    lock: transaction ? transaction.LOCK.UPDATE : undefined
+  });
+
+  if (!credit) {
+    return await DepartmentCredit.create(
+      {
+        departmentId,
+        month,
+        year,
+        availableCredits: 100,
+        lockedCredits: 0
+      },
+      { transaction }
+    );
+  }
+
+  // THIS is what was missing
+  credit.availableCredits = 100;
+  credit.lockedCredits = 0;
+
+  await credit.save({ transaction });
+  return credit;
+};
 /* ---------- EXPORT ---------- */
 
 // export default {

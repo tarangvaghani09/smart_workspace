@@ -3,17 +3,49 @@ import { Room, Booking, BookingRoom, User } from '../models/index.js';
 import { Op } from 'sequelize';
 import moment from 'moment-timezone';
 
+function isWithinRoomsHours(dateStr, timeStr, timezone) {
+  if (!timeStr) return true; // ⬅ No time provided → treat as valid
+
+  const local = moment.tz(
+    `${dateStr} ${timeStr}`,
+    'YYYY-MM-DD h:mm a',
+    timezone
+  );
+
+  const hour = local.hour();
+  const minute = local.minute();
+
+  const isStartValid = hour >= 9;
+  const isEndValid =
+    hour < 17 || (hour === 17 && minute === 0);
+
+  return isStartValid && isEndValid;
+}
+
 export default {
   async searchRooms(req, res) {
     try {
       const {
         capacity,
-        features,
         date,
         startTime,
         endTime,
         timezone
       } = req.body;
+
+      const isStartValid = isWithinRoomsHours(date, startTime, timezone);
+      const isEndValid = isWithinRoomsHours(date, endTime, timezone);
+
+      // ONLY check if user provided a time
+
+      if(startTime && ! isStartValid) {
+        return res.status(400).json({ error: 'Start time is outside rooms hours (9 AM - 5 PM)' });
+      }
+
+      if(endTime && ! isEndValid) {
+        return res.status(400).json({ error: 'End time is outside rooms hours (9 AM - 5 PM)' });
+      }
+
 
       // Convert frontend local date + time + timezone to UTC
       const utcStart = convertToUTC(date, startTime, timezone);
@@ -26,25 +58,9 @@ export default {
         where.isActive = 1;
       }
       if (capacity) where.capacity = { [Op.gte]: capacity };
-      if (features && features.length) where.features = { [Op.not]: null };
 
       /* ---------- CANDIDATE ROOMS ---------- */
       let rooms = await Room.findAll({ where });
-
-      /* ---------- STRICT FEATURES FILTER ---------- */
-      if (features && features.length) {
-        const fLower = features.map(f => f.toLowerCase());
-
-        rooms = rooms.filter(r => {
-          if (!r.features) return false;
-
-          const roomFeatures = r.features
-            .split(',')
-            .map(s => s.trim().toLowerCase());
-
-          return fLower.every(f => roomFeatures.includes(f));
-        });
-      }
 
       if (rooms.length === 0) return res.json([]);
 

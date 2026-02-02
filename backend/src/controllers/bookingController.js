@@ -29,8 +29,24 @@ export function calculateCredits({ creditsPerHour }, hours, quantity = 1) {
   return hours * creditsPerHour * quantity;
 }
 
+const isWithinAllowedHours = (start, end) => {
+  const startHour = start.getHours();
+  const endHour = end.getHours();
+  const endMinutes = end.getMinutes();
+
+  // Allowed: 09:00 to 17:00 (5 PM sharp)
+  const isStartValid = startHour >= 9;
+  const isEndValid =
+    endHour < 17 || (endHour === 17 && endMinutes === 0);
+
+  return isStartValid && isEndValid;
+};
+
 const isRoomAvailable = async (roomId, start, end, t) => {
   if (!roomId) return true;
+
+  const room = await Room.findByPk(roomId, { transaction: t });
+  if (!room || !room.isActive) return false; // ⛔ block inactive rooms
 
   const conflict = await Booking.findOne({
     where: {
@@ -139,11 +155,18 @@ const createBooking = async (req, res) => {
 
     /* ---------- AVAILABILITY CHECK ---------- */
     for (const o of occurrences) {
+      //  TIME RESTRICTION CHECK
+      if (!isWithinAllowedHours(o.start, o.end)) {
+        throw new Error(
+          'Bookings are allowed only between 9:00 AM and 5:00 PM'
+        );
+      }
+
       if (roomId) {
         const ok = await isRoomAvailable(roomId, o.start, o.end, t);
         if (!ok) {
           // throw new Error(`Room conflict on ${o.start.toDateString()}`);
-          throw new Error('Selected room is not available for the chosen time');
+          throw new Error('Selected room is not available');
         }
       }
 
@@ -174,6 +197,10 @@ const createBooking = async (req, res) => {
       if (roomId) {
         room = room || await Room.findByPk(roomId, { transaction: t, lock: t.LOCK.UPDATE });  //prevents simultaneous approval/credit logic conflicts
         if (!room) throw new Error('Room not found');
+
+        if (!room.isActive) {
+          throw new Error('Selected room is not available'); // ⛔ block inactive rooms
+        }
 
         totalCredits += calculateCredits(room, hours, 1);
       }

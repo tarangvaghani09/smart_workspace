@@ -24,8 +24,8 @@ export default function RoomManagement() {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0]
   );
-  const [startTime, setStartTime] = useState('00:00');
-  const [endTime, setEndTime] = useState('00:00');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const modalRef = useRef(null);
 
   const handleModalOutsideClick = (e) => {
@@ -40,24 +40,15 @@ export default function RoomManagement() {
   }, [typeFilter, capacityFilter, minPrice, maxPrice, selectedDate, startTime, endTime]);
 
   const now = new Date();
-
-    const maxDate = new Date();
+  const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 1);
   const maxDateString = maxDate.toISOString().split('T')[0];
-
-  // Format date as YYYY-MM-DD
-  const toAmPm = (time24) => {
-    const [h, m] = time24.split(':').map(Number);
-    const ampm = h >= 12 ? 'pm' : 'am';
-    const hour = h % 12 || 12;
-    return `${hour}:${m.toString().padStart(2, '0')} ${ampm}`;
-  };
 
   const fetchRooms = async () => {
     const payload = {
       date: selectedDate,
-      startTime: toAmPm(startTime),
-      endTime: toAmPm(endTime),         // full day end
+      startTime,       // send in HH:mm 24-hour format
+      endTime,         // send in HH:mm 24-hour format
       timezone: 'Asia/Kolkata',
       capacity: capacityFilter ? Number(capacityFilter) : undefined,
       type: typeFilter !== 'all' ? typeFilter : undefined,
@@ -76,10 +67,17 @@ export default function RoomManagement() {
       });
 
       const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Invalid time selection');
+        setRooms([]);
+        return;
+      }
+      setError('');
       setRooms(Array.isArray(data) ? data : data.rooms || []);
       console.log('Fetched rooms:', data);
     } catch (err) {
       console.error('Error fetching rooms:', err);
+      setError('Something went wrong while searching rooms');
       setRooms([]);
     }
   };
@@ -164,32 +162,41 @@ export default function RoomManagement() {
   const normalizedSearch = search.trim().toLowerCase();
 
   const filteredRooms = rooms.filter(room => {
-    // Search filter
-    // const matchesSearch = room.name.toLowerCase().includes(search.toLowerCase());
-
     const matchesSearch =
       !normalizedSearch ||
       room.name?.toLowerCase().includes(normalizedSearch);
 
-    // Capacity filter
     const matchesCapacity = !capacityFilter || room.capacity >= Number(capacityFilter);
-
-    // Price filters
     const matchesMinPrice = !minPrice || room.creditsPerHour >= Number(minPrice);
     const matchesMaxPrice = !maxPrice || room.creditsPerHour <= Number(maxPrice);
-
-    // Type filter (already handled by backend, but for consistency)
     const matchesType = typeFilter === 'all' || room.type === typeFilter;
 
     return matchesSearch && matchesCapacity && matchesMinPrice && matchesMaxPrice && matchesType;
   });
 
-    const activeRooms = filteredRooms.filter(r => r.isActive);
+  const activeRooms = filteredRooms.filter(r => r.isActive);
   const inactiveRooms = filteredRooms.filter(r => !r.isActive);
 
   useEffect(() => {
-    if (startTime > endTime) {
-      setEndTime(startTime);
+    if (!startTime) return;
+
+    // If endTime missing or invalid
+    if (!endTime || endTime <= startTime) {
+      const [h, m] = startTime.split(':').map(Number);
+
+      let newHour = h + 1;
+      let newMinute = m;
+
+      // Clamp to 17:00 (5 PM)
+      if (newHour > 17 || (newHour === 17 && newMinute > 0)) {
+        setEndTime('17:00');
+        return;
+      }
+
+      const paddedHour = String(newHour).padStart(2, '0');
+      const paddedMinute = String(newMinute).padStart(2, '0');
+
+      setEndTime(`${paddedHour}:${paddedMinute}`);
     }
   }, [startTime]);
 
@@ -221,7 +228,7 @@ export default function RoomManagement() {
           <input
             type="date"
             value={selectedDate}
-                        min={new Date().toISOString().split('T')[0]}
+            min={new Date().toISOString().split('T')[0]}
             max={maxDateString}
             onChange={(e) => setSelectedDate(e.target.value)}
             onFocus={(e) => e.target.showPicker()}
@@ -238,10 +245,11 @@ export default function RoomManagement() {
 
           <input
             type="time"
+            disabled={!startTime}
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
             onFocus={(e) => e.target.showPicker()}
-            className="border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
+            className={`border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition ${!startTime ? 'cursor-not-allowed' : 'cursor-pointer'}`}
           />
 
           <input
@@ -272,9 +280,14 @@ export default function RoomManagement() {
           />
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 w-full flex items-center justify-center rounded-xl bg-white text-red-700 text-lg">
+            {error}
+          </div>
+        )}
+
         {/* 🧱 ROOM CARDS */}
         <div className="space-y-10">
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {activeRooms.map(room => (
               <div
@@ -398,7 +411,7 @@ export default function RoomManagement() {
             ))}
           </div>
 
-          {filteredRooms.length === 0 && (
+          {!error && filteredRooms.length === 0 && (
             <p className="text-gray-500">No rooms found.</p>
           )}
         </div>

@@ -4,7 +4,8 @@ import { Booking, BookingRoom, Room, User, sequelize } from '../models/index.js'
 import { Op } from 'sequelize';
 import {
   getOrCreateCredit,
-  refundCredits
+  refundCredits,
+  resetMonthlyCredits
 } from '../services/creditService.js';
 import emailService from '../services/emailService.js';
 
@@ -104,7 +105,7 @@ function startAll() {
       ];
 
       for (const departmentId of uniqueDepartments) {
-        await getOrCreateCredit(departmentId, transaction);
+        await resetMonthlyCredits(departmentId, transaction);
       }
 
       await transaction.commit();
@@ -113,7 +114,11 @@ function startAll() {
       await transaction.rollback();
       console.error('[CRON] Monthly credit job failed', err);
     }
-  });
+  },
+    {
+      timezone: 'Asia/Kolkata'
+    }
+  );
 
   /* ---------------------------------------------------
     AUTO CHECK-OUT BOOKINGS

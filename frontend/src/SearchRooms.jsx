@@ -8,6 +8,7 @@ export default function SearchRooms() {
   const [filteredRooms, setFilteredRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
+  const [error, setError] = useState('');
   // filters (existing)
   const [search, setSearch] = useState('');
   const [type, setType] = useState('all');
@@ -15,8 +16,8 @@ export default function SearchRooms() {
 
   // NEW filters (added without removing anything)
   const [date, setDate] = useState(moment().format('YYYY-MM-DD'));
-  const [startTime, setStartTime] = useState('00:00 AM');
-  const [endTime, setEndTime] = useState('00:00 AM');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [features, setFeatures] = useState({
     projector: false,
     whiteboard: false,
@@ -33,6 +34,28 @@ export default function SearchRooms() {
     applyFilters();
   }, [search, type, capacity, rooms]);
 
+  useEffect(() => {
+    if (!startTime) return;
+
+    // Convert startTime (hh:mm A) to moment
+    const start = moment(startTime, 'hh:mm A');
+
+    // If endTime missing OR endTime <= startTime
+    if (
+      !endTime ||
+      moment(endTime, 'hh:mm A').isSameOrBefore(start)
+    ) {
+      let autoEnd = start.clone().add(1, 'hour');
+
+      // Clamp to 5:00 PM
+      const officeEnd = moment('5:00 PM', 'h:mm A');
+      if (autoEnd.isAfter(officeEnd)) {
+        autoEnd = officeEnd;
+      }
+
+      setEndTime(autoEnd.format('hh:mm A'));
+    }
+  }, [startTime]);
   const fetchRooms = async () => {
     // prepare selected features for backend
     const selectedFeatures = Object.entries(features)
@@ -46,11 +69,11 @@ export default function SearchRooms() {
 
     const payload = {
       date,
-      startTime,
-      endTime,
       features: selectedFeatures,
       capacity: capacity ? Number(capacity) : undefined,
       timezone: moment.tz.guess(),
+      ...(startTime && { startTime }),
+      ...(endTime && { endTime }),
     };
 
     try {
@@ -64,10 +87,22 @@ export default function SearchRooms() {
       });
 
       const data = await res.json();
-      setRooms(data);
-      setFilteredRooms(data);
+
+      // BACKEND ERROR HANDLING
+      if (!res.ok) {
+        setError(data.error || 'Invalid time selection');
+        setRooms([]);
+        setFilteredRooms([]);
+        return;
+      }
+      setError('');
+      setRooms(Array.isArray(data) ? data : []);
+      setFilteredRooms(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching rooms:', error);
+      setError('Something went wrong while searching rooms');
+      setRooms([]);
+      setFilteredRooms([]);
     }
   };
 
@@ -143,10 +178,10 @@ export default function SearchRooms() {
             </label>
             <input
               type="time"
-              value={moment(startTime, 'hh:mm A').format('HH:mm')}
+              value={startTime ? moment(startTime, 'hh:mm A').format('HH:mm') : ""}
               onChange={e =>
                 setStartTime(
-                  moment(e.target.value, 'HH:mm').format('hh:mm A')
+                  e.target.value ? moment(e.target.value, 'HH:mm').format('hh:mm A') : ""
                 )
               }
               onFocus={e => e.target.showPicker()}
@@ -161,14 +196,15 @@ export default function SearchRooms() {
             </label>
             <input
               type="time"
-              value={moment(endTime, 'hh:mm A').format('HH:mm')}
+              disabled={!startTime}
+              value={endTime ? moment(endTime, 'hh:mm A').format('HH:mm') : ""}
               onChange={e =>
                 setEndTime(
-                  moment(e.target.value, 'HH:mm').format('hh:mm A')
+                  e.target.value ? moment(e.target.value, 'HH:mm').format('hh:mm A') : ""
                 )
               }
               onFocus={e => e.target.showPicker()}
-              className="mt-1 w-full border p-2 rounded-xl text-gray-600 border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none cursor-pointer transition"
+              className={`mt-1 w-full border p-2 rounded-xl text-gray-600 border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition ${!startTime ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             />
           </div>
 
@@ -239,9 +275,15 @@ export default function SearchRooms() {
           </div>
         </aside>
 
+        {error && (
+          <div className="mb-4 p-3 w-full flex items-center justify-center rounded-xl bg-white text-red-700 text-lg">
+            {error}
+          </div>
+        )}
+
         {/* ROOM CARDS */}
         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          {filteredRooms.map(room => (
+          {filteredRooms?.map(room => (
             <div
               key={room.id}
               className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl cursor-pointer transition duration-200"
@@ -284,7 +326,7 @@ export default function SearchRooms() {
             </div>
           ))}
 
-          {filteredRooms.length === 0 && (
+          {!error && filteredRooms?.length === 0 && (
             <p className="text-gray-500">No rooms found.</p>
           )}
         </div>
