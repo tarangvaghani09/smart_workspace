@@ -29,6 +29,10 @@ export default function SearchRooms() {
     applyFilters();
   }, [search, type, capacity, rooms]);
 
+  const maxDate = new Date();
+  maxDate.setFullYear(maxDate.getFullYear() + 1);
+  const maxDateString = maxDate.toISOString().split('T')[0];
+
   useEffect(() => {
     if (!startTime) return;
 
@@ -146,6 +150,8 @@ export default function SearchRooms() {
             <input
               type="date"
               value={date}
+              min={new Date().toISOString().split('T')[0]}
+              max={maxDateString}
               onChange={e => setDate(e.target.value)}
               onFocus={e => e.target.showPicker()}
               className="mt-1 w-full border p-2 rounded-xl text-gray-600 border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none cursor-pointer transition"

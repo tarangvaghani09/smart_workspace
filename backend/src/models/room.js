@@ -32,10 +32,10 @@ export default (sequelize) => {
         defaultValue: 'standard'
       },
 
-      features: {
-        type: DataTypes.JSON,   // e.g., { "Whiteboard": true, "Projector": false }
-        allowNull: true
-      },
+      // features: {
+      //   type: DataTypes.JSON,   // e.g., { "Whiteboard": true, "Projector": false }
+      //   allowNull: true
+      // },
 
       creditsPerHour: {
         type: DataTypes.INTEGER,

@@ -3,6 +3,7 @@ import { Department, User } from '../models/index.js';
 import department from '../models/department.js';
 import bcrypt from 'bcryptjs';
 import { loginSchema, registerSchema } from '../validators/auth.schema.js';
+import { getOrCreateCredit } from '../services/creditService.js';
 
 const login = async (req, res) => {
   try {
@@ -17,7 +18,7 @@ const login = async (req, res) => {
 
     const { email, password } = parsed.data;
 
-    const user = await User.findOne({ where: { email:email.trim() } });
+    const user = await User.findOne({ where: { email: email.trim() } });
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -64,19 +65,17 @@ const register = async (req, res) => {
       });
     }
 
-    const { name, email, password, department } = parsed.data;
+    const { name, email, password, departmentId } = parsed.data;
 
     const exists = await User.findOne({ where: { email } });
     if (exists) {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
-    // Find department by NAME
-    const dept = await Department.findOne({
-      where: { name: department }
-    });
+    // Find department by ID
+    const department = await Department.findByPk(departmentId);
 
-    if (!dept) {
+    if (!department) {
       return res.status(400).json({ message: 'Invalid department' });
     }
 
@@ -88,8 +87,10 @@ const register = async (req, res) => {
       // password: hashedPassword,
       password,
       role: 'regular',
-      departmentId: dept.id
+      departmentId
     });
+
+    await getOrCreateCredit(departmentId);
 
     res.status(201).json({
       message: 'Registration successful',
@@ -97,7 +98,10 @@ const register = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        department: dept.name
+        department: {
+          id: department.id,
+          name: department.name
+        }
       }
     });
   } catch (err) {

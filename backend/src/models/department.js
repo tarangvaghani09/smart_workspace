@@ -23,7 +23,11 @@ export default (sequelize) => {
 
       monthlyCreditQuota: {
         type: DataTypes.INTEGER,
-        defaultValue: 100
+        defaultValue: 100,
+        validate: {
+          min: 0,
+          max: 100
+        }
       },
 
       isActive: {

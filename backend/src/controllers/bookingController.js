@@ -153,8 +153,18 @@ const createBooking = async (req, res) => {
       occurrences.push({ start, end });
     }
 
+    const now = new Date();
+
     /* ---------- AVAILABILITY CHECK ---------- */
     for (const o of occurrences) {
+
+      // Past time check
+      if (o.start < now) {
+        throw new Error('Cannot book a time that has already passed');
+      }
+      if (o.end <= o.start) {
+        throw new Error('End time must be after start time');
+      }
       //  TIME RESTRICTION CHECK
       if (!isWithinAllowedHours(o.start, o.end)) {
         throw new Error(
@@ -749,7 +759,9 @@ const listDepartmentBookings = async (req, res) => {
 const listDepartments = async (req, res) => {
   try {
     const departments = await Department.findAll({
-      attributes: ['id', 'name']
+      where: { isActive: true },
+      attributes: ['id', 'name'],
+      order: [['name', 'ASC']]
     });
 
     res.json(departments);

@@ -18,11 +18,11 @@ const GHOST_GRACE_MINUTES = Number(process.env.GHOST_GRACE_MINUTES || 15);
 function startAll() {
   cron.schedule('*/5 * * * *', async () => {
     const transaction = await sequelize.transaction();
+    const emailQueue = [];
 
     try {
-      const now = new Date();
       const threshold = new Date(
-        now.getTime() - GHOST_GRACE_MINUTES * 60 * 1000
+        Date.now() - GHOST_GRACE_MINUTES * 60 * 1000
       );
 
       const ghostBookings = await Booking.findAll({
@@ -34,56 +34,50 @@ function startAll() {
         include: [
           {
             model: Room,
-            attributes: ['id', 'name', 'creditsPerHour'],
+            attributes: ['creditsPerHour'],
             through: { attributes: [] }
           },
-          {
-            model: User
-          }
+          { model: User }
         ],
         transaction,
         lock: transaction.LOCK.UPDATE
       });
 
       for (const booking of ghostBookings) {
-        booking.status = 'NO_SHOW';
-        await booking.save({ transaction });
-
-        const user = booking.User;
-        const bookingRoom = booking.Rooms?.[0]; // take first room
-        const room = bookingRoom?.Room;
-
-        if (!user || !room) continue;
+        const room = booking.Rooms?.[0];
+        if (!room || !booking.User) continue;
 
         const hours =
           (new Date(booking.endTime) - new Date(booking.startTime)) /
-          (1000 * 60 * 60);
+          36e5;
 
         const creditsUsed = Math.ceil(hours * room.creditsPerHour);
 
-        // FULL refund on NO_SHOW
+        booking.status = 'NO_SHOW';
+        booking.creditsUsed = creditsUsed;
+
+        await booking.save({ transaction });
         await refundCredits(
-          user.departmentId,
+          booking.User.departmentId,
           creditsUsed,
           transaction
         );
 
-        // Send notification email asynchronously
-        if (booking.User) {
-          emailService.sendNoShowNotificationEmail(booking.id).catch(err => {
-            console.error(
-              `Email failed for no-show ${b.id}:`,
-              err.message
-            );
-          });
-        }
+        emailQueue.push(booking.id);
       }
 
       await transaction.commit();
-      console.log(`[CRON] No-show bookings processed: ${ghostBookings.length}`);
+
+      // send emails
+      for (const id of emailQueue) {
+        emailService.sendNoShowNotificationEmail(id)
+          .catch(console.error);
+      }
+
+      console.log(`[CRON] No-show processed: ${ghostBookings.length}`);
     } catch (err) {
       await transaction.rollback();
-      console.error('[CRON] Ghost booking job failed', err);
+      console.error('[CRON] Ghost booking failed', err);
     }
   });
 

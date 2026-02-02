@@ -2,13 +2,18 @@ import { useEffect, useState, useRef } from 'react';
 import React from 'react';
 import Navbar from './Navbar';
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { useLocation } from 'react-router-dom';
 
 export default function BookingList() {
   const [bookings, setBookings] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
-
+  const [selectedMonth, setSelectedMonth] = useState(
+    new Date().getMonth() // 0–11
+  );
   const menuRef = useRef(null);
 
+  const location = useLocation();
+  const showMonthFilter = location.pathname === '/bookings';
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -136,14 +141,15 @@ export default function BookingList() {
     setOpenMenuId(null);
   };
 
+
+  const filteredBookings = bookings.filter(b => {
+    const bookingMonth = new Date(b.startTime).getMonth();
+    return bookingMonth === selectedMonth;
+  });
+
   return (
     <div>
-
-
       {/* PAGE WRAPPER */}
-
-
-
       {/* CARD */}
       {/* <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8"> */}
       {/* <div className="flex items-center justify-between mb-8">
@@ -154,10 +160,36 @@ export default function BookingList() {
                 {bookings.length} Total
               </span>
             </div> */}
+      {showMonthFilter && (
+        <div className="mb-4 flex items-center justify-between">
+          {/* LEFT */}
+          <p className="text-3xl font-display font-bold text-slate-900">
+            Room Bookings
+          </p>
 
+          {/* RIGHT */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-semibold text-gray-600">
+              Filter by Month:
+            </label>
+
+            <select
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(Number(e.target.value))}
+              className="border p-2 rounded-xl text-gray-600 border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none cursor-pointer transition"
+            >
+              {Array.from({ length: 12 }).map((_, i) => (
+                <option key={i} value={i}>
+                  {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
       <div className='bg-white rounded-[2rem] shadow-sm overflow-hidden'>
         <div className="space-y-3">
-          {bookings?.map(b => (
+          {filteredBookings?.map(b => (
             console.log('booking item:', b) ||
             <div
               key={b.id}
@@ -301,7 +333,7 @@ export default function BookingList() {
             </div>
           ))}
 
-          {bookings.length === 0 && (
+          {filteredBookings.length === 0 && (
             <div className="py-20 text-center">
               <div className="text-4xl mb-4">📭</div>
               <p className="text-gray-400 font-medium">

@@ -8,7 +8,7 @@ function Register() {
     name: '',
     email: '',
     password: '',
-    department: ''
+    departmentId: ''
   });
 
   const [departments, setDepartments] = useState([]);
@@ -21,7 +21,7 @@ function Register() {
     fetch('https://localhost/api/departments')
       .then(res => res.json())
       .then(data => {
-        console.log(data)
+        console.log('Departments:', data)
         setDepartments(Array.isArray(data) ? data : []);
       })
       .catch(() => setError('Failed to load departments'));
@@ -29,7 +29,9 @@ function Register() {
 
   /* ---------------- HANDLE CHANGE ---------------- */
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    console.log(form);
   };
 
   /* ---------------- HANDLE SUBMIT ---------------- */
@@ -63,7 +65,7 @@ function Register() {
       setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => {
         navigate('/');
-      }, 1500);
+      }, 500);
     } catch (err) {
       setError({ general: err.message || 'Something went wrong' });
     } finally {
@@ -187,15 +189,15 @@ function Register() {
                   </svg>
                 </div>
                 <select
-                  name="department"
-                  value={form.department}
+                  name="departmentId"
+                  value={form.departmentId}
                   onChange={handleChange}
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
                 >
                   <option value="">Select Department</option>
                   {departments?.map(d => (
-                    <option key={d.id} value={d.name}>
+                    <option key={d.id} value={d.id}>
                       {d.name}
                     </option>
                   ))}

@@ -22,10 +22,16 @@ async function sendBookingConfirmationEmail(bookingId) {
   if (!booking) throw new Error('Booking not found');
 
   const user = await User.findByPk(booking.userId);
-  let room = null;
-  if (booking.roomId) {
-    room = await Room.findByPk(booking.roomId);
+  const rooms = await booking.getRooms();
+
+  let roomText = 'No room (Device booking)';
+  if (rooms && rooms.length > 0) {
+    roomText = rooms.map(r => r.name).join(', ');
+    console.log('Room booked:', roomText);
+  } else {
+    console.log('No room booked, device-only booking');
   }
+
 
   const bookingResources = await BookingResource.findAll({
     where: { bookingId }
@@ -43,7 +49,6 @@ async function sendBookingConfirmationEmail(bookingId) {
   }
 
   const title = booking.title || 'Meeting';
-  const roomText = room ? room.name : 'No room (Device booking)';
   const description =
     `Room: ${roomText}\n` +
     `Resources: ${resourceText}\n` +
@@ -171,9 +176,15 @@ async function sendBookingRejectedEmail(bookingId) {
   if (!booking) throw new Error('Booking not found');
 
   const user = await User.findByPk(booking.userId);
-  let room = null;
-  if (booking.roomId) {
-    room = await Room.findByPk(booking.roomId);
+
+  const rooms = await booking.getRooms();
+
+  let roomText = 'No room (Device booking)';
+  if (rooms && rooms.length > 0) {
+    roomText = rooms.map(r => r.name).join(', ');
+    console.log('Room booked:', roomText);
+  } else {
+    console.log('No room booked, device-only booking');
   }
 
   function formatISTDateTime(startTime, endTime) {
@@ -222,7 +233,6 @@ async function sendBookingRejectedEmail(bookingId) {
   }
 
   const title = booking.title || 'Meeting';
-  const roomText = room ? room.name : 'No room (Device booking)';
 
 
   const mailOptions = {
@@ -299,10 +309,16 @@ async function sendNoShowNotificationEmail(bookingId) {
       return;
     }
 
-    let room = null;
-    if (booking.roomId) {
-      room = await Room.findByPk(booking.roomId);
+    const rooms = await booking.getRooms();
+
+    let roomText = 'No room (Device booking)';
+    if (rooms && rooms.length > 0) {
+      roomText = rooms.map(r => r.name).join(', ');
+      console.log('Room booked:', roomText);
+    } else {
+      console.log('No room booked, device-only booking');
     }
+
     const user = await User.findByPk(booking.userId);
     if (!user) {
       console.warn('User not found for no-show email', { bookingId });
@@ -353,8 +369,6 @@ async function sendNoShowNotificationEmail(bookingId) {
       );
       resourceText = resources.filter(Boolean).join(', ');
     }
-
-    const roomText = room ? room.name : 'No room (Device booking)';
 
     const mailOptions = {
       from: process.env.FROM_EMAIL || process.env.SMTP_USER,

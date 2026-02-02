@@ -21,8 +21,8 @@ export const registerSchema = z.object({
     .regex(/[0-9]/, 'Password must contain one number')
     .regex(/[^A-Za-z0-9]/, 'Password must contain one special character'),
 
-  department: z
-    .string({ required_error: 'Department is required' })
+  departmentId: z
+    .string({ required_error: 'DepartmentId is required' })
     .trim()
     .min(1, 'Department cannot be empty')
 });
