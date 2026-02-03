@@ -9,7 +9,6 @@ import Approvals from './Approvals';
 import BookRoom from './BookRoom';
 import ProtectedRoute from './ProtectedRoute';
 
-// Admin pages (create empty components if not yet created)
 import RoomManagement from './RoomManagement';
 import AddRoom from './AddRoom';
 import AdminRequests from './AdminRequests';

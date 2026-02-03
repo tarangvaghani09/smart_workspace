@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 export default function BookRoom({ room = null, onClose }) {
-  /* ---------------- BASIC STATE ---------------- */
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [start, setStart] = useState('');
@@ -11,16 +10,13 @@ export default function BookRoom({ room = null, onClose }) {
   const [recurrenceType, setRecurrenceType] = useState('ONE_TIME');
   const [weeks, setWeeks] = useState(4);
 
-  /* ---------------- TARGET ---------------- */
   const [bookingTarget, setBookingTarget] = useState(
     room ? 'ROOM' : 'DEVICE'
   );
 
-  /* ---------------- RESOURCES ---------------- */
   const [allResources, setAllResources] = useState([]);
   const [resources, setResources] = useState([]);
 
-  /* ---------------- CREDITS ---------------- */
   const [credits, setCredits] = useState({
     availableCredits: 0,
     lockedCredits: 0
@@ -29,25 +25,25 @@ export default function BookRoom({ room = null, onClose }) {
   const modalRef = useRef(null);
   const token = localStorage.getItem('token');
 
-  /* ---------------- DATE HELPERS ---------------- */
+  // date helper 
   const today = new Date();
   const todayDate = today.toISOString().split('T')[0];
   const isToday = date === todayDate;
   const minTime = isToday ? today.toTimeString().slice(0, 5) : '00:00';
 
-  /* ---------------- MAX DATE (1 YEAR AHEAD) ---------------- */
+  // max date (1 year) 
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 1);
   const maxDateString = maxDate.toISOString().split('T')[0];
 
-  /* ---------------- CLOSE OVERLAY ---------------- */
+  // close overlay
   const handleOverlayClick = (e) => {
     if (modalRef.current && !modalRef.current.contains(e.target)) {
       onClose();
     }
   };
 
-  /* ---------------- FETCH CREDITS ---------------- */
+  // fetch credit 
   useEffect(() => {
     fetch('https://localhost/api/credits', {
       headers: { Authorization: `Bearer ${token}` }
@@ -59,7 +55,7 @@ export default function BookRoom({ room = null, onClose }) {
       );
   }, [token]);
 
-  /* ---------------- FETCH RESOURCES ---------------- */
+  // fetch resource 
   useEffect(() => {
     fetch('https://localhost/api/resources', {
       headers: { Authorization: `Bearer ${token}` }
@@ -69,17 +65,13 @@ export default function BookRoom({ room = null, onClose }) {
       .catch(() => setAllResources([]));
   }, [token]);
 
-  /* =====================================================
-     CREDIT CALCULATION (FIXED + MATCHES BACKEND)
-     ===================================================== */
-
-  // ROOM credits
+  // room credits
   const roomCredits =
     bookingTarget !== 'DEVICE' && room
       ? room.creditsPerHour * hours
       : 0;
 
-  // DEVICE credits
+  // resource credits
   const deviceCredits = resources.reduce((sum, r) => {
     const resource = allResources.find(x => x.id === r.resourceId);
     if (!resource) return sum;
@@ -101,7 +93,6 @@ export default function BookRoom({ room = null, onClose }) {
     bookingTarget !== 'DEVICE' &&
     credits.availableCredits < estimatedCredits;
 
-  /* ---------------- SUBMIT ---------------- */
   const submit = async () => {
     if (!title || !date || !start) {
       alert('❌ Please fill all fields');

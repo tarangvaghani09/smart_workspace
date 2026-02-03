@@ -13,7 +13,7 @@ export default function ResourceManagement() {
     creditsPerHour: ''
   });
 
-  /* 🔍 FILTERS */
+  /* filter */
   const [search, setSearch] = useState('');
   const [minQty, setMinQty] = useState('');
   const [maxQty, setMaxQty] = useState('');
@@ -36,7 +36,6 @@ export default function ResourceManagement() {
     applyFilters();
   }, [search, minQty, maxQty, minCredits, maxCredits, resources]);
 
-  /* ================= FETCH ================= */
   const fetchResources = async () => {
     const res = await fetch('https://localhost/api/listAllResources', {
       headers: {
@@ -48,15 +47,8 @@ export default function ResourceManagement() {
     setFilteredResources(data);
   };
 
-  /* ================= FILTER ================= */
   const applyFilters = () => {
     let data = [...resources];
-
-    // if (search) {
-    //   data = data.filter(r =>
-    //     r.name.toLowerCase().includes(search.toLowerCase())
-    //   );
-    // }
 
     const normalizedSearch = search.trim().toLowerCase();
 
@@ -160,7 +152,6 @@ export default function ResourceManagement() {
     fetchResources();
   };
 
-  /* ================= UI ================= */
   return (
     <AdminLayout>
       <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300">
@@ -180,7 +171,7 @@ export default function ResourceManagement() {
           </Link>
         </div>
 
-        {/* 🔍 FILTER BAR */}
+        {/* FILTER BAR */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-8">
           <input
             className="border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
@@ -226,10 +217,10 @@ export default function ResourceManagement() {
           />
         </div>
 
-        {/* 🧱 RESOURCE CARDS */}
+        {/* RESOURCE CARDS */}
         <div className="space-y-10">
 
-          {/* ✅ ACTIVE RESOURCES */}
+          {/* ACTIVE RESOURCES */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {activeResources.map(resource => (
               <div
@@ -277,7 +268,7 @@ export default function ResourceManagement() {
             ))}
           </div>
 
-          {/* ➖ DIVIDER (only if inactive exist) */}
+          {/* DIVIDER (only if inactive exist) */}
           {inactiveResources.length > 0 && (
             <div className="flex items-center gap-4">
               <hr className="flex-1 border-gray-300" />
@@ -288,7 +279,7 @@ export default function ResourceManagement() {
             </div>
           )}
 
-          {/* 🚫 INACTIVE RESOURCES */}
+          {/* INACTIVE RESOURCES */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {inactiveResources.map(resource => (
               <div
@@ -331,7 +322,7 @@ export default function ResourceManagement() {
         </div>
       </div>
 
-      {/* ✏️ EDIT MODAL */}
+      {/* EDIT MODAL */}
       {editingResource && (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"

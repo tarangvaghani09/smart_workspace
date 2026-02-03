@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Navbar from './Navbar';
 import BookRoom from './BookRoom';
 import moment from 'moment-timezone';
 
@@ -9,12 +8,10 @@ export default function SearchRooms() {
   const [selectedRoom, setSelectedRoom] = useState(null);
 
   const [error, setError] = useState('');
-  // filters (existing)
   const [search, setSearch] = useState('');
   const [type, setType] = useState('all');
   const [capacity, setCapacity] = useState('');
 
-  // NEW filters (added without removing anything)
   const [date, setDate] = useState(moment().format('YYYY-MM-DD'));
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -24,7 +21,7 @@ export default function SearchRooms() {
     fetchRooms();
   }, [date, startTime, endTime]);
 
-  // apply frontend filters
+  // frontend filters
   useEffect(() => {
     applyFilters();
   }, [search, type, capacity, rooms]);
@@ -77,7 +74,6 @@ export default function SearchRooms() {
 
       const data = await res.json();
 
-      // BACKEND ERROR HANDLING
       if (!res.ok) {
         setError(data.error || 'Invalid time selection');
         setRooms([]);
@@ -117,7 +113,6 @@ export default function SearchRooms() {
 
   return (
     <>
-
       {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <div>

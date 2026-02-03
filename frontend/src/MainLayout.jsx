@@ -7,7 +7,7 @@ export default function MainLayout() {
     <>
       <div className="flex min-h-screen bg-slate-50">
         <Navbar />
-        {/* Main page area */}
+        {/* Main page */}
         <main className="ml-64 w-full p-10">
           <Outlet />
         </main>

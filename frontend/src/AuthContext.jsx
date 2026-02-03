@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
 
   const token = localStorage.getItem('token');
 
-  // 🔐 Fetch logged-in user from server
+  // Fetch logged-in user from server
   useEffect(() => {
     if (!token) {
       setLoading(false);
@@ -24,13 +24,13 @@ export const AuthProvider = ({ children }) => {
       }
     })
       .then(res => {
-        // 🚫 RATE LIMIT → let nginx handle it
+        // Rate limit nginx handle it
         if (res.status === 429) {
           const retry = res.headers.get("Retry-After") || 900;
           window.location.href = `/429.html?retry=${retry}`; // show 429.html
           return;
         }
-        // 🔐 AUTH ERRORS ONLY
+        // Auth error
         if (res.status === 401 || res.status === 403) {
           throw new Error('Unauthorized');
         }
@@ -48,14 +48,14 @@ export const AuthProvider = ({ children }) => {
       .catch((err) => {
         if (err.message === 'Unauthorized') {
           logout();
-        } // invalid / expired token
+        } 
       })
       .finally(() => setLoading(false));
   }, [token]);
 
   const login = (token) => {
     localStorage.setItem('token', token);
-    setLoading(true); // triggers /me fetch
+    setLoading(true); // /me fetch
   };
 
   const logout = () => {

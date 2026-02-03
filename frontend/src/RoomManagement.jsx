@@ -11,7 +11,6 @@ export default function RoomManagement() {
     creditsPerHour: ''
   });
 
-  // 🔍 FILTER STATES
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [capacityFilter, setCapacityFilter] = useState('');
@@ -206,7 +205,7 @@ export default function RoomManagement() {
         <h2 className="text-xl font-bold mb-2">Room Management</h2>
         <p className="text-gray-500 mb-6">Manage rooms, pricing & capacity.</p>
 
-        {/* 🔍 FILTER BAR */}
+        {/* FILTER BAR */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-8">
           <input
             className="border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
@@ -286,7 +285,7 @@ export default function RoomManagement() {
           </div>
         )}
 
-        {/* 🧱 ROOM CARDS */}
+        {/* ROOM CARDS */}
         <div className="space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {activeRooms.map(room => (
@@ -347,7 +346,7 @@ export default function RoomManagement() {
             ))}
           </div>
 
-          {/* ➖ DIVIDER (only if inactive exist) */}
+          {/* DIVIDER (only if inactive exist) */}
           {inactiveRooms.length > 0 && (
             <div className="flex items-center gap-4">
               <hr className="flex-1 border-gray-300" />
@@ -358,7 +357,7 @@ export default function RoomManagement() {
             </div>
           )}
 
-          {/* 🚫 INACTIVE ROOMS */}
+          {/* INACTIVE ROOMS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {inactiveRooms.map(room => (
               <div
@@ -417,7 +416,7 @@ export default function RoomManagement() {
         </div>
       </div>
 
-      {/* ✏️ EDIT MODAL */}
+      {/* EDIT MODAL */}
       {editingRoom && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 cursor-pointer" onMouseDown={handleModalOutsideClick}>
           <div ref={modalRef} className="bg-white w-[420px] rounded-2xl shadow-lg overflow-hidden cursor-default">

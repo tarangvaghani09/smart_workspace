@@ -16,7 +16,7 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
 
-  /* ---------------- LOAD DEPARTMENTS ---------------- */
+  //  DEPARTMENTS 
   useEffect(() => {
     fetch('https://localhost/api/departments')
       .then(res => res.json())
@@ -27,14 +27,12 @@ function Register() {
       .catch(() => setError('Failed to load departments'));
   }, []);
 
-  /* ---------------- HANDLE CHANGE ---------------- */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-    console.log(form,name,value);
+    console.log(form, name, value);
   };
 
-  /* ---------------- HANDLE SUBMIT ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);

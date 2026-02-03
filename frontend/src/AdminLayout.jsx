@@ -17,9 +17,7 @@ export default function AdminLayout({ children }) {
   return (
     <>
       {/* <Navbar /> */}
-
-
-
+      
       {/* HEADER */}
       <div className="flex justify-between items-start mb-8">
         <div>

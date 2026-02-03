@@ -1,7 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import React from 'react';
-import Navbar from './Navbar';
-import { RiDeleteBin6Line } from "react-icons/ri";
 
 export default function BookingList() {
   const [bookings, setBookings] = useState([]);

@@ -12,7 +12,6 @@ function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Handle login submit
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -40,7 +39,6 @@ function Login() {
         return;
       }
 
-      // Save auth data
       login(data.token);
       setSuccess('Login successful! Redirecting to dashboard...');
       setTimeout(() => {
