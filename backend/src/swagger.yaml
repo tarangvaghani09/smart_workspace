@@ -220,14 +220,6 @@ paths:
         200:
           description: Matching rooms
 
-  /resources:
-    get:
-      tags: [Resources]
-      summary: List resources
-      responses:
-        200:
-          description: List of devices
-
   /rooms:
     post:
       tags: [Admin]
@@ -268,6 +260,16 @@ paths:
           description: Room deleted
         400:
           description: Room has future bookings
+
+  /rooms/{id}/status:
+    patch:
+      tags: [Admin]
+      summary: Toggle Room Status
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        200:
+          description: Toggle Room Status
 
   /approvals/pending:
     get:
@@ -318,6 +320,13 @@ paths:
           description: List of all resources
 
   /resources:
+    get:
+      tags: [Resources]
+      summary: List resources
+      responses:
+        200:
+          description: List of devices
+
     post:
       tags: [Admin]
       summary: Create resource (Admin)

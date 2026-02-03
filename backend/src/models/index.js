@@ -37,7 +37,6 @@ import BookingModel from './booking.js';
 import BookingResourceModel from './booking_resources.js';
 import BookingRoomModel from './booking_rooms.js';
 import DepartmentCreditModel from './departmentCredit.js';
-import RoomApprovalRuleModel from './roomApprovalRule.js';
 
 const User = UserModel(sequelize);
 const Department = DepartmentModel(sequelize);
@@ -47,7 +46,6 @@ const Booking = BookingModel(sequelize);
 const BookingResource = BookingResourceModel(sequelize);
 const BookingRoom = BookingRoomModel(sequelize);
 const DepartmentCredit = DepartmentCreditModel(sequelize);
-const RoomApprovalRule = RoomApprovalRuleModel(sequelize);
 
 // Department → Users
 Department.hasMany(User, { foreignKey: 'departmentId' });
@@ -115,6 +113,5 @@ export {
   Booking,
   BookingResource,
   BookingRoom,
-  DepartmentCredit,
-  RoomApprovalRule
+  DepartmentCredit
 };
