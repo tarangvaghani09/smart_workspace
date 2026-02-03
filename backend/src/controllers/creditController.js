@@ -5,19 +5,6 @@ const getCredits = async (req, res) => {
   try {
     const user = req.user;
 
-    // console.log('credit', user)
-
-    //  Admins don't have credits
-    // if (user.role === 'admin') {
-    //   return res.json({
-    //     availableCredits: 0,
-    //     lockedCredits: 0,
-    //     month: null,
-    //     year: null,
-    //     message: 'Admins do not use department credits'
-    //   });
-    // }
-
     if (!user.departmentId) {
       return res.status(400).json({
         error: 'User does not belong to a department'

@@ -46,7 +46,7 @@ const isRoomAvailable = async (roomId, start, end, t) => {
   if (!roomId) return true;
 
   const room = await Room.findByPk(roomId, { transaction: t });
-  if (!room || !room.isActive) return false; // ⛔ block inactive rooms
+  if (!room || !room.isActive) return false; // block inactive rooms
 
   const conflict = await Booking.findOne({
     where: {
@@ -61,7 +61,7 @@ const isRoomAvailable = async (roomId, start, end, t) => {
       through: { attributes: [] }
     }],
     transaction: t,
-    lock: t.LOCK.UPDATE   // 🔐 THIS IS THE KEY
+    lock: t.LOCK.UPDATE
   });
 
   return !conflict;
@@ -87,7 +87,7 @@ const isResourceAvailable = async (
     },
     include: [{
       model: Booking,
-      attributes: [],   // CRITICAL: remove Booking columns
+      attributes: [],   // remove Booking columns
       where: {
         status: { [Op.in]: ['CONFIRMED', 'PENDING'] },
         checkedOut: false,
@@ -96,7 +96,7 @@ const isResourceAvailable = async (
       }
     }],
     transaction: t,
-    lock: t.LOCK.UPDATE   // 🔐 lock resource row
+    lock: t.LOCK.UPDATE
   });
 
   return (bookedQty || 0) + qty <= resource.quantity;
@@ -209,7 +209,7 @@ const createBooking = async (req, res) => {
         if (!room) throw new Error('Room not found');
 
         if (!room.isActive) {
-          throw new Error('Selected room is not available'); // ⛔ block inactive rooms
+          throw new Error('Selected room is not available'); //inactive rooms
         }
 
         totalCredits += calculateCredits(room, hours, 1);
@@ -381,21 +381,6 @@ const getBooking = async (req, res) => {
 };
 
 const createRoom = async (req, res) => {
-  /*
-    Expected payload:
-    {
-      "name": "Board Room A",
-      "type": "boardroom",     // standard | boardroom
-      "capacity": 12,
-      "location": "3rd Floor",
-      "amenities": {
-        "whiteboard": true,
-        "screen": true,
-        "videoConferencing": true
-      }
-    }
-  */
-
   const result = createRoomSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -409,11 +394,6 @@ const createRoom = async (req, res) => {
   }
 
   const { name, type, capacity, creditsPerHour, location, amenities } = result.data;
-
-  // Optional authorization
-  // if (!user || !['admin', 'manager'].includes(user.role)) {
-  //   return res.status(403).json({ error: 'Not authorized to create rooms' });
-  // }
 
   const transaction = await sequelize.transaction();
 
@@ -472,7 +452,6 @@ const toggleRoomStatus = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 const updateRoom = async (req, res) => {
   const { id } = req.params;
@@ -630,14 +609,6 @@ const checkOutBooking = async (req, res) => {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    // ownership check
-    // if (
-    //   booking.userId !== req.user.id &&
-    //   !['admin', 'manager'].includes(req.user.role)
-    // ) {
-    //   return res.status(403).json({ error: 'Not authorized' });
-    // }
-
     if (booking.userId !== req.user.id) {
       return res.status(403).json({ error: 'Not authorized' });
     }
@@ -659,16 +630,6 @@ const checkOutBooking = async (req, res) => {
         error: 'Booking already checked out'
       });
     }
-
-    // const now = new Date();
-    // const endTime = new Date(booking.endTime);
-
-    // // time validation
-    // if (now < endTime) {
-    //   return res.status(400).json({
-    //     error: 'Check-out allowed only after booking end time'
-    //   });
-    // }
 
     booking.checkedOut = true;
     // booking.checkedOutAt = new Date();

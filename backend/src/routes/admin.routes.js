@@ -5,9 +5,6 @@ import resourceController from '../controllers/resourceController.js';
 import bookingController from '../controllers/bookingController.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 import { adminLimiter } from '../middleware/rateLimiter.js';
-import { validate } from '../middleware/validate.js';
-import { createResourceSchema, updateResourceSchema } from '../validators/resource.schema.js';
-import { createRoomSchema, updateRoomSchema } from '../validators/room.schema.js';
 
 const router = express.Router();
 

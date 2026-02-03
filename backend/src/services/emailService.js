@@ -14,9 +14,8 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-/**
- * Send booking confirmation with calendar invite (IST)
- */
+// Send booking confirmation with calendar invite (IST)
+
 async function sendBookingConfirmationEmail(bookingId) {
   const booking = await Booking.findByPk(bookingId);
   if (!booking) throw new Error('Booking not found');
@@ -163,13 +162,14 @@ async function sendBookingConfirmationEmail(bookingId) {
   const info = await transporter.sendMail(mailOptions);
   console.log('Email sent', info.messageId);
 
-  // cleanup
   setTimeout(() => {
     try {
       fs.unlinkSync(icsPath);
     } catch (e) { }
   }, 10 * 60 * 1000);
 }
+
+// Send booking rejected email
 
 async function sendBookingRejectedEmail(bookingId) {
   const booking = await Booking.findByPk(bookingId);
@@ -298,9 +298,8 @@ async function sendBookingRejectedEmail(bookingId) {
   console.log('Rejection email sent', info.messageId);
 }
 
-/**
- * Send no-show notification email
- */
+// Send no-show notification email
+
 async function sendNoShowNotificationEmail(bookingId) {
   try {
     const booking = await Booking.findByPk(bookingId);

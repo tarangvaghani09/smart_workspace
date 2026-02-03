@@ -1,6 +1,5 @@
 // models/Booking.js
 import { DataTypes } from 'sequelize';
-import { no } from 'zod/v4/locales';
 
 export default (sequelize) =>
   sequelize.define('Booking', {

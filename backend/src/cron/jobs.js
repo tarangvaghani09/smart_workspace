@@ -11,9 +11,7 @@ import emailService from '../services/emailService.js';
 
 const GHOST_GRACE_MINUTES = Number(process.env.GHOST_GRACE_MINUTES || 15);
 
-/* ---------------------------------------------------
-   GHOST / NO-SHOW BOOKINGS
-   --------------------------------------------------- */
+//  GHOST / NO-SHOW BOOKINGS
 
 function startAll() {
   cron.schedule('*/5 * * * *', async () => {
@@ -81,9 +79,7 @@ function startAll() {
     }
   });
 
-  /* ---------------------------------------------------
-     MONTHLY CREDIT INITIALIZATION
-     --------------------------------------------------- */
+  //  MONTHLY CREDIT INITIALIZATION
 
   cron.schedule('0 0 1 * *', async () => {
     const transaction = await sequelize.transaction();
@@ -114,9 +110,7 @@ function startAll() {
     }
   );
 
-  /* ---------------------------------------------------
-    AUTO CHECK-OUT BOOKINGS
-   --------------------------------------------------- */
+  // AUTO CHECK-OUT BOOKINGS
 
   cron.schedule('*/5 * * * *', async () => {
     const transaction = await sequelize.transaction();

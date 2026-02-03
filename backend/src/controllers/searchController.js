@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import moment from 'moment-timezone';
 
 function isWithinRoomsHours(dateStr, timeStr, timezone) {
-  if (!timeStr) return true; // ⬅ No time provided → treat as valid
+  if (!timeStr) return true; // No time provided treat as valid
 
   const local = moment.tz(
     `${dateStr} ${timeStr}`,
@@ -38,14 +38,13 @@ export default {
 
       // ONLY check if user provided a time
 
-      if(startTime && ! isStartValid) {
+      if (startTime && !isStartValid) {
         return res.status(400).json({ error: 'Start time is outside rooms hours (9 AM - 5 PM)' });
       }
 
-      if(endTime && ! isEndValid) {
+      if (endTime && !isEndValid) {
         return res.status(400).json({ error: 'End time is outside rooms hours (9 AM - 5 PM)' });
       }
-
 
       // Convert frontend local date + time + timezone to UTC
       const utcStart = convertToUTC(date, startTime, timezone);
@@ -111,7 +110,7 @@ export default {
   }
 };
 
-// Converts "date" + "time" in any timezone to UTC ISO string
+// Converts date + time in any timezone to UTC ISO string
 function convertToUTC(dateStr, timeStr, timezone) {
   // moment.tz can parse "5:00 am" correctly
   const local = moment.tz(`${dateStr} ${timeStr}`, 'YYYY-MM-DD h:mm a', timezone);

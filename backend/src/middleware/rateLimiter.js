@@ -1,9 +1,7 @@
 import rateLimit from 'express-rate-limit';
 
-/**
- * GENERAL API LIMIT
- * For authenticated users
- */
+// GENERAL API LIMIT For authenticated users
+
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 500, // 500 requests per user/IP
@@ -20,9 +18,8 @@ export const apiLimiter = rateLimit({
   }
 });
 
-/**
- * LOGIN LIMIT
- */
+// LOGIN LIMIT
+
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 15, // 15 login attempts
@@ -32,9 +29,8 @@ export const loginLimiter = rateLimit({
   }
 });
 
-/**
- * ADMIN LIMIT
- */
+//  ADMIN LIMIT
+
 export const adminLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 200,

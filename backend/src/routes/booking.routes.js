@@ -2,8 +2,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
 import bookingController from '../controllers/bookingController.js';
-import { validate } from '../middleware/validate.js';
-import { createBookingSchema } from '../validators/booking.schema.js';
 
 const router = express.Router();
 

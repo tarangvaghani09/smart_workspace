@@ -1,4 +1,3 @@
-// Routes configuration
 import express from 'express';
 // import seedController from './controllers/seedController.js';
 import authRoutes from './routes/auth.routes.js';

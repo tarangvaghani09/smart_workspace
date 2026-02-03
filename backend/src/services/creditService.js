@@ -1,7 +1,7 @@
 // services/creditService.js
 import { DepartmentCredit } from '../models/index.js';
 
-/* ---------- HELPERS ---------- */
+//  Helpers
 
 function currentMonthYear() {
   const now = new Date();
@@ -36,11 +36,8 @@ export const getOrCreateCredit = async (departmentId, transaction) => {
   return credit;
 }
 
-/* ---------- CORE OPERATIONS ---------- */
+// Used when booking needs approval (PENDING)
 
-/**
- * Used when booking needs approval (PENDING)
- */
 export const lockCredits = async (departmentId, amount, transaction) => {
   const credit = await getOrCreateCredit(departmentId, transaction);
 
@@ -56,9 +53,8 @@ export const lockCredits = async (departmentId, amount, transaction) => {
   await credit.save({ transaction });
 }
 
-/**
- * Used when PENDING booking is APPROVED
- */
+// Used when PENDING booking is APPROVED
+
 export const deductLockedCredits = async (departmentId, amount, transaction) => {
   const credit = await getOrCreateCredit(departmentId, transaction);
 
@@ -70,9 +66,8 @@ export const deductLockedCredits = async (departmentId, amount, transaction) => 
   await credit.save({ transaction });
 }
 
-/**
- * Used when booking does NOT require approval
- */
+// Used when booking does NOT require approval
+
 export const deductCredits = async (departmentId, amount, transaction) => {
   const credit = await getOrCreateCredit(departmentId, transaction);
 
@@ -84,9 +79,8 @@ export const deductCredits = async (departmentId, amount, transaction) => {
   await credit.save({ transaction });
 }
 
-/**
- * Used when PENDING booking is REJECTED
- */
+//  Used when PENDING booking is REJECTED
+
 export const releaseLockedCredits = async (departmentId, amount, transaction) => {
   const credit = await getOrCreateCredit(departmentId, transaction);
 
@@ -100,9 +94,8 @@ export const releaseLockedCredits = async (departmentId, amount, transaction) =>
   await credit.save({ transaction });
 }
 
-/**
- * Used for cancellation refunds
- */
+// Used for cancellation refunds
+
 export const refundCredits = async (departmentId, amount, transaction) => {
   const credit = await getOrCreateCredit(departmentId, transaction);
 
@@ -110,9 +103,7 @@ export const refundCredits = async (departmentId, amount, transaction) => {
   await credit.save({ transaction });
 }
 
-/**
- * Used for monthly credit reset
- */
+//  Used for monthly credit reset
 
 export const resetMonthlyCredits = async (departmentId, transaction) => {
   const { month, year } = currentMonthYear();
@@ -136,20 +127,9 @@ export const resetMonthlyCredits = async (departmentId, transaction) => {
     );
   }
 
-  // THIS is what was missing
   credit.availableCredits = 100;
   credit.lockedCredits = 0;
 
   await credit.save({ transaction });
   return credit;
 };
-/* ---------- EXPORT ---------- */
-
-// export default {
-//   getOrCreateCredit,
-//   lockCredits,
-//   deductLockedCredits,
-//   deductCredits,
-//   releaseLockedCredits,
-//   refundCredits
-// };

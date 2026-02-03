@@ -3,15 +3,13 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { fileURLToPath } from 'url';
 
-/**
- * Required to emulate __dirname in ES modules
- */
+// Required to emulate __dirname in ES modules
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/**
- * Escape text for ICS format
- */
+// Escape text for ICS format
+
 function escapeICS(text = '') {
   return text
     .replace(/\\/g, '\\\\')
@@ -20,10 +18,9 @@ function escapeICS(text = '') {
     .replace(/;/g, '\\;');
 }
 
-/**
- * Format date to IST (Asia/Kolkata) for ICS
- * Output: YYYYMMDDTHHMMSS
- */
+// Format date to IST (Asia/Kolkata) for ICS
+// Output: YYYYMMDDTHHMMSS
+
 function formatDateToICSWithIST(date) {
   const dt = new Date(date);
 
@@ -44,9 +41,8 @@ function formatDateToICSWithIST(date) {
   return `${map.year}${map.month}${map.day}T${map.hour}${map.minute}${map.second}`;
 }
 
-/**
- * IST timezone block (REQUIRED)
- */
+// IST timezone block (REQUIRED)
+
 function istTimezoneBlock() {
   return [
     'BEGIN:VTIMEZONE',
@@ -61,9 +57,8 @@ function istTimezoneBlock() {
   ];
 }
 
-/**
- * Generate ICS file
- */
+//  Generate ICS file
+
 async function generateIcsFile({
   uid,
   title,
