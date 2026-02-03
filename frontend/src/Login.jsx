@@ -45,7 +45,7 @@ function Login() {
       setSuccess('Login successful! Redirecting to dashboard...');
       setTimeout(() => {
         navigate('/dashboard');
-      }, 500);
+      }, 200);
     } catch (err) {
       setError({ general: err.message || 'Something went wrong' });
     } finally {

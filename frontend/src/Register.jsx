@@ -31,7 +31,7 @@ function Register() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-    console.log(form);
+    console.log(form,name,value);
   };
 
   /* ---------------- HANDLE SUBMIT ---------------- */
@@ -65,7 +65,7 @@ function Register() {
       setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => {
         navigate('/');
-      }, 500);
+      }, 200);
     } catch (err) {
       setError({ general: err.message || 'Something went wrong' });
     } finally {

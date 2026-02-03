@@ -117,7 +117,7 @@ export default function Approvals() {
             </p>
           </div>
 
-          {/* 🔥 Department Dropdown */}
+          {/* Department Dropdown */}
           <select
             value={selectedDepartment}
             onChange={(e) => setSelectedDepartment(e.target.value)}

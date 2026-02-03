@@ -86,7 +86,7 @@ const register = async (req, res) => {
       email,
       // password: hashedPassword,
       password,
-      role: 'regular',
+      role: 'junior',
       departmentId
     });
 

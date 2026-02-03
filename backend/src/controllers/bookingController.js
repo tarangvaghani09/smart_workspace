@@ -236,7 +236,7 @@ const createBooking = async (req, res) => {
     /* ---------- APPROVAL / DEDUCTION ---------- */
     const requiresApproval =
       room &&
-      (user.role === 'junior' || user.role === 'regular') &&
+      (user.role === 'junior') &&
       room.type === 'boardroom';
 
     if (totalCredits > 0) {

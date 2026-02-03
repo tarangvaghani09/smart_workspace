@@ -29,8 +29,8 @@ export default (sequelize) => {
       },
 
       role: {
-        type: DataTypes.ENUM('admin', 'junior', 'regular'),
-        defaultValue: 'regular'
+        type: DataTypes.ENUM('admin', 'junior'),
+        defaultValue: 'junior'
       },
 
       departmentId: {

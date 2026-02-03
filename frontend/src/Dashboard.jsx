@@ -3,6 +3,7 @@ import Navbar from './Navbar';
 import BookingList from './BookingList';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import BookingListHomePage from './BookingListHomePage';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -241,7 +242,7 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-          <BookingList />
+          <BookingListHomePage />
         </div>
       </section>
 
