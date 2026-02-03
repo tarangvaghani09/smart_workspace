@@ -9,7 +9,6 @@ smart-workspace/
 ├─ backend/
 │ ├─ src/
 │ │ ├─ index.js
-│ │ ├─ redis.js
 │ │ ├─ routes.js
 │ │ ├─ swagger.yaml
 │ │ ├─ controllers/
@@ -19,10 +18,8 @@ smart-workspace/
 │ │ │ ├─ cancelController.js
 │ │ │ ├─ resourceController.js
 │ │ │ ├─ searchController.js
-│ │ │ └─ seedController.js
 │ │ ├─ cron/
 │ │ │ └─ jobs.js
-│ │ ├─ docs/
 │ │ ├─ middleware/
 │ │ │ ├─ auth.js
 │ │ │ ├─ rateLimiter.js
@@ -33,15 +30,19 @@ smart-workspace/
 │ │ │ ├─ user.js
 │ │ │ ├─ department.js
 │ │ │ ├─ room.js
-│ │ │ ├─ roomApprovalRule.js
 │ │ │ ├─ resource.js
 │ │ │ ├─ booking.js
 │ │ │ ├─ bookingResource.js
 │ │ │ └─ departmentCredit.js
 │ │ ├─ public/
 │ │ │ └─ 429.html
-│ │ ├─ queues/
 │ │ ├─ routes/
+│ │ │ ├─ admin.routes.js
+│ │ │ ├─ auth.routes.js
+│ │ │ ├─ booking.routes.js
+│ │ │ ├─ credit.routes.js
+│ │ │ ├─ resource.routes.js
+│ │ │ ├─ search.routes.js
 │ │ ├─ services/
 │ │ │ ├─ creditService.js
 │ │ │ ├─ emailService.js
@@ -51,7 +52,6 @@ smart-workspace/
 │ │ │ ├─ booking.schema.js
 │ │ │ ├─ resource.schema.js
 │ │ │ └─ room.schema.js
-│ │ └─ workers/
 │ ├─ tmp/ # ICS files saved here (auto-created)
 │ ├─ .env
 │ ├─ .gitignore
