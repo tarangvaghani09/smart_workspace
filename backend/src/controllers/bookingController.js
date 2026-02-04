@@ -17,6 +17,7 @@ import emailService from '../services/emailService.js';
 import { lockCredits, deductCredits, refundCredits } from '../services/creditService.js';
 import { createBookingSchema } from '../validators/booking.schema.js';
 import { createRoomSchema, updateRoomSchema } from '../validators/room.schema.js';
+import { emailQueue } from '../queues/emailQueue.js';
 
 export function hoursBetween(start, end) {
   return Math.max(
@@ -315,14 +316,9 @@ const createBooking = async (req, res) => {
     /* ---------- SEND EMAIL AFTER COMMIT ---------- */
     for (const b of bookings) {
       if (b.status === 'CONFIRMED') {
-        emailService
-          .sendBookingConfirmationEmail(b.id)
-          .catch(err => {
-            console.error(
-              `Email failed for booking ${b.id}:`,
-              err.message
-            );
-          });
+        await emailQueue.add('send-booking-email', {
+          bookingId: b.id
+        });
       }
     }
 

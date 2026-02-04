@@ -1,5 +1,6 @@
 // controllers/approvalController.js
 import { Booking, Room, Resource, sequelize, Department, User, BookingRoom } from '../models/index.js';
+import { emailQueue } from '../queues/emailQueue.js';
 import {
   deductLockedCredits,
   releaseLockedCredits
@@ -74,7 +75,10 @@ export const approveBooking = async (req, res) => {
       booking.decidedBy = admin.id;
       await booking.save({ transaction: t });
       await t.commit();
-      emailService.sendBookingRejectedEmail(booking.id);
+      // enqueue email (non-blocking)
+      await emailQueue.add('booking-rejected', {
+        bookingId: booking.id
+      });
       return res.json({ ok: true });
     }
 
@@ -90,7 +94,10 @@ export const approveBooking = async (req, res) => {
     await booking.save({ transaction: t });
 
     await t.commit();
-    emailService.sendBookingConfirmationEmail(booking.id);
+    // enqueue email (non-blocking)
+    await emailQueue.add('booking-confirmed', {
+      bookingId: booking.id
+    });
     res.json({ ok: true });
   } catch (err) {
     await t.rollback();

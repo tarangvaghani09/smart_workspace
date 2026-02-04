@@ -8,6 +8,7 @@ import {
   resetMonthlyCredits
 } from '../services/creditService.js';
 import emailService from '../services/emailService.js';
+import { emailQueue } from '../queues/emailQueue.js';
 
 const GHOST_GRACE_MINUTES = Number(process.env.GHOST_GRACE_MINUTES || 15);
 
@@ -16,7 +17,7 @@ const GHOST_GRACE_MINUTES = Number(process.env.GHOST_GRACE_MINUTES || 15);
 function startAll() {
   cron.schedule('*/5 * * * *', async () => {
     const transaction = await sequelize.transaction();
-    const emailQueue = [];
+    const emailJobs = [];
 
     try {
       const threshold = new Date(
@@ -61,15 +62,16 @@ function startAll() {
           transaction
         );
 
-        emailQueue.push(booking.id);
+        emailJobs.push(booking.id);
       }
 
       await transaction.commit();
 
       // send emails
-      for (const id of emailQueue) {
-        emailService.sendNoShowNotificationEmail(id)
-          .catch(console.error);
+      for (const bookingId of emailJobs) {
+        await emailQueue.add('booking-no-show', {
+          bookingId
+        });
       }
 
       console.log(`[CRON] No-show processed: ${ghostBookings.length}`);

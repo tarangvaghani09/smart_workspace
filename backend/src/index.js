@@ -10,6 +10,7 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import cors from 'cors';
 import { apiLimiter } from './middleware/rateLimiter.js';
+import "./queues/redis.js";
 
 const app = express();
 app.set('trust proxy', 'loopback');

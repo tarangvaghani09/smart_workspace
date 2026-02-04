@@ -185,7 +185,7 @@ export default function BookingList() {
       <div className='bg-white rounded-[2rem] shadow-sm overflow-hidden'>
         <div className="space-y-3">
           {filteredBookings?.map(b => (
-            console.log('booking item:', b) ||
+            // console.log('booking item:', b) ||
             <div
               key={b.id}
               className="group border border-gray-100 rounded-2xl p-5 flex items-center gap-6 hover:shadow-lg hover:border-indigo-100 transition-all duration-300"

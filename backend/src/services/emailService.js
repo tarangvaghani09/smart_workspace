@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '../../.env' });
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';

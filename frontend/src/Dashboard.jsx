@@ -44,7 +44,7 @@ export default function Dashboard() {
   const upNext = bookings
     .filter(b => {
       if (b.status !== 'CONFIRMED') return false;
-      if (b.checkedOut) return false;     
+      if (b.checkedOut) return false;
       if (b.status === 'CANCELLED') return false;
       if (b.status === 'NO_SHOW') return false;
 
@@ -155,7 +155,7 @@ export default function Dashboard() {
               <p className="mt-5 ml-[-15px] flex items-center gap-2 text-sm text-slate-300">
                 <span className="w-2 h-2 rounded-full bg-accent"></span>
                 <div className="w-2 h-2 rounded-full bg-green-600"></div>
-                Room ID: {upNext.roomId}
+                Room ID: {upNext.Rooms[0]?.id}
               </p>
             </>
           ) : (

@@ -12,7 +12,7 @@
 
 // update smart_workspace.user set role = "admin" where id = 1;
 
-
+// delete from smart_workspace.user where id = 1;
 
 
 

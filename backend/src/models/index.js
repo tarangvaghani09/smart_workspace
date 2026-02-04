@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '../../.env' });
 import { Sequelize } from 'sequelize';
 
 // Create Sequelize instance for MySQL
