@@ -24,7 +24,7 @@ function Register() {
         console.log('Departments:', data)
         setDepartments(Array.isArray(data) ? data : []);
       })
-      .catch(() => setError('Failed to load departments'));
+      .catch(() => setError({general:'Failed to load departments'}));
   }, []);
 
   const handleChange = (e) => {

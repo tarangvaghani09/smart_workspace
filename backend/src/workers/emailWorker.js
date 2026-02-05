@@ -39,9 +39,9 @@ const worker = new Worker(
     concurrency: 1 // one email at a time (safe for SMTP)
   }
 );
-worker.on('completed', job => {
-  console.log(`✅ Email sent for booking ${job.data.bookingId}`);
-});
+// worker.on('completed', job => {
+//   console.log(`✅ Email sent for booking ${job.data.bookingId}`);
+// });
 
 worker.on('failed', (job, err) => {
   console.error(

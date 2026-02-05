@@ -10,7 +10,7 @@ info:
     email: backend@company.com
 
 servers:
-  - url: http://localhost:3000/api
+  - url: http://192.168.5.91:3000/api
     description: Local
   - url: https://api.company.com
     description: Production
@@ -99,7 +99,13 @@ paths:
   /bookings:
     post:
       tags: [Bookings]
-      summary: Create booking (room / device / both)
+      summary: Create booking (room / resource / both)
+      description: >
+        Creates a booking using local time in Asia/Kolkata.
+        Backend stores all times in UTC automatically.
+        Bookings allowed only between 9:00 AM and 5:00 PM IST.
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -108,9 +114,11 @@ paths:
               $ref: '#/components/schemas/CreateBooking'
       responses:
         200:
-          description: Booking created
+          description: Booking created successfully
         400:
-          $ref: '#/components/responses/BadRequest'
+          description: Validation or availability error
+        401:
+          $ref: '#/components/responses/Unauthorized'
 
     get:
       tags: [Bookings]
@@ -330,7 +338,11 @@ paths:
     post:
       tags: [Admin]
       summary: Create resource (Admin)
+      description: Create a new bookable resource with credit cost per hour
+      security:
+        - bearerAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -338,16 +350,39 @@ paths:
       responses:
         201:
           description: Resource created
+        400:
+          description: Validation failed
+        409:
+          description: Resource with this name already exists
+        403:
+          $ref: '#/components/responses/Forbidden'
 
   /resources/{id}:
     patch:
       tags: [Admin]
       summary: Update resource
+      description: Update resource name, quantity, or credit cost per hour
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceUpdate'
       responses:
         200:
           description: Resource updated
+        400:
+          description: Validation failed
+        404:
+          description: Resource not found
+        409:
+          description: Resource with this name already exists
+        403:
+          $ref: '#/components/responses/Forbidden'
 
     delete:
       tags: [Admin]
@@ -473,7 +508,7 @@ components:
         - name
         - email
         - password
-        - department
+        - departmentId
       properties:
         name:
           type: string
@@ -485,10 +520,10 @@ components:
         password:
           type: string
           format: password
-          example: "123456"
-        department:
+          example: "Alice@123"
+        departmentId:
           type: string
-          example: Engineering
+          example: "1"
 
     RegisterResponse:
       type: object
@@ -549,8 +584,6 @@ components:
           enum: [standard, boardroom]
         capacity: { type: integer }
         creditsPerHour: { type: integer }
-        location: { type: string }
-        amenities: { type: object }
 
     RoomUpdate:
       type: object
@@ -561,28 +594,68 @@ components:
 
     CreateBooking:
       type: object
-      required: [title, startTime, endTime]
+      required:
+        - title
+        - startTime
+        - endTime
       properties:
-        title: { type: string }
-        roomId: { type: integer, nullable: true }
-        startTime:
+        title:
           type: string
-          format: date-time
-        endTime:
-          type: string
-          format: date-time
-        recurrenceType:
-          type: string
-          enum: [ONE_TIME, WEEKLY]
-        weeks:
+          example: Team Sync Meeting
+
+        roomId:
           type: integer
+          nullable: true
+          example: 3
+
         resources:
           type: array
           items:
             type: object
+            required: [resourceId]
             properties:
-              resourceId: { type: integer }
-              quantity: { type: integer }
+              resourceId:
+                type: integer
+                example: 5
+              quantity:
+                type: integer
+                minimum: 1
+                default: 1
+
+        startTime:
+          type: string
+          description: Start time in IST (AM/PM format)
+          example: "2026-02-10T10:00 AM"
+
+        endTime:
+          type: string
+          description: End time in IST (AM/PM format)
+          example: "2026-02-10T11:00 AM"
+
+        recurrenceType:
+          type: string
+          enum: [ONE_TIME, WEEKLY]
+          default: ONE_TIME
+
+        weeks:
+          type: integer
+          minimum: 1
+          example: 4
+          description: Required only when recurrenceType is WEEKLY
+
+    resources:
+      type: array
+      items:
+        type: object
+        required: [resourceId]
+        properties:
+          resourceId:
+            type: integer
+            example: 5
+          quantity:
+            type: integer
+            minimum: 1
+            default: 1
 
     ApproveBooking:
       type: object
@@ -595,10 +668,37 @@ components:
 
     ResourceCreate:
       type: object
-      required: [name, quantity]
+      required:
+        - name
+        - quantity
+        - creditsPerHour
       properties:
-        name: { type: string }
-        quantity: { type: integer }
+        name:
+          type: string
+          example: Projector
+        quantity:
+          type: integer
+          minimum: 1
+          example: 5
+        creditsPerHour:
+          type: integer
+          minimum: 1
+          example: 10
+
+    ResourceUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Wireless Projector
+        quantity:
+          type: integer
+          minimum: 1
+          example: 10
+        creditsPerHour:
+          type: integer
+          minimum: 1
+          example: 20
 
     SearchRooms:
       type: object

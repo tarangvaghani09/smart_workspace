@@ -17,9 +17,13 @@
 
 
 
+loced credit for last date of month
 
+resource type
 
+room approval 
 
+max booking time in day
 
 
 //  openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365

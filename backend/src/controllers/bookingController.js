@@ -316,7 +316,7 @@ const createBooking = async (req, res) => {
     /* ---------- SEND EMAIL AFTER COMMIT ---------- */
     for (const b of bookings) {
       if (b.status === 'CONFIRMED') {
-        await emailQueue.add('send-booking-email', {
+        await emailQueue.add('booking-confirmed', {
           bookingId: b.id
         });
       }

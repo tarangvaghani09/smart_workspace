@@ -12,7 +12,8 @@ export const getPendingBookings = async (req, res) => {
     const { departmentId } = req.query;
 
     const where = {
-      status: 'PENDING'
+      status: 'PENDING',
+      // departmentId: req.user.departmentId
     };
 
     // Apply department filter
