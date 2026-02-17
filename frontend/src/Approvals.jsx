@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
+import { toast } from 'react-toastify';
 
 export default function Approvals() {
 
@@ -59,7 +61,7 @@ export default function Approvals() {
 
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      toast.error(err.message || 'Failed to load approvals');
       setPendingBookings([]);
     }
 
@@ -87,10 +89,11 @@ export default function Approvals() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || 'Failed to process decision');
+        toast.error(data.error || 'Failed to process decision');
         return;
       }
 
+      toast.success(action === 'APPROVE' ? 'Booking approved' : 'Booking rejected');
       fetchPendingBookings();
 
     } finally {
@@ -105,6 +108,9 @@ export default function Approvals() {
 
   return (
     <AdminLayout>
+      <Helmet>
+        <title>Approvals</title>
+      </Helmet>
       <div className="bg-white rounded-2xl shadow-sm border border-gray-300">
 
         {/* HEADER */}
@@ -164,9 +170,9 @@ export default function Approvals() {
                     </span>
                   )}
 
-                  {b.Rooms?.length > 0 && (
+                  {(b.Room?.name || b.Rooms?.[0]?.name) && (
                     <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600">
-                      💺 {b.Rooms[0].name}
+                      💺 {b.Room?.name || b.Rooms?.[0]?.name}
                     </span>
                   )}
 

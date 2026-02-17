@@ -27,6 +27,35 @@ export default (sequelize) => {
         validate: {
           min: 1
         }
+      },
+
+      deductedFromSourceQty: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        validate: {
+          min: 0
+        }
+      },
+
+      fromRoomId: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
+
+      toRoomId: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
+
+      startTime: {
+        type: DataTypes.DATE,
+        allowNull: true
+      },
+
+      endTime: {
+        type: DataTypes.DATE,
+        allowNull: true
       }
     },
     {
@@ -34,8 +63,17 @@ export default (sequelize) => {
       timestamps: true,
       indexes: [
         {
+          name: 'uq_booking_resources_alloc',
           unique: true,
-          fields: ['bookingId', 'resourceId']
+          fields: ['bookingId', 'resourceId', 'fromRoomId', 'toRoomId']
+        },
+        {
+          name: 'idx_booking_resources_resource_from_room',
+          fields: ['resourceId', 'fromRoomId']
+        },
+        {
+          name: 'idx_booking_resources_resource_to_room',
+          fields: ['resourceId', 'toRoomId']
         }
       ]
     }

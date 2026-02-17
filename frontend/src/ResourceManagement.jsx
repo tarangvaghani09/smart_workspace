@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import AlertDialog from './components/AlertDialog';
 
 export default function ResourceManagement() {
   const [resources, setResources] = useState([]);
@@ -10,7 +13,8 @@ export default function ResourceManagement() {
   const [form, setForm] = useState({
     name: '',
     quantity: '',
-    creditsPerHour: ''
+    creditsPerHour: '',
+    isMovable: true
   });
 
   /* filter */
@@ -21,7 +25,14 @@ export default function ResourceManagement() {
   const [maxCredits, setMaxCredits] = useState('');
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    description: '',
+    confirmText: 'Confirm',
+    destructive: false,
+    onConfirm: null
+  });
 
   const activeResources = filteredResources.filter(r => r.isActive);
   const inactiveResources = filteredResources.filter(r => !r.isActive);
@@ -83,12 +94,12 @@ export default function ResourceManagement() {
     setForm({
       name: resource.name,
       quantity: resource.quantity,
-      creditsPerHour: resource.creditsPerHour
+      creditsPerHour: resource.creditsPerHour,
+      isMovable: Boolean(resource.isMovable)
     });
   };
 
   const saveEdit = async () => {
-    setError('');
     setLoading(true);
 
     try {
@@ -103,7 +114,8 @@ export default function ResourceManagement() {
           body: JSON.stringify({
             name: form.name,
             quantity: Number(form.quantity),
-            creditsPerHour: Number(form.creditsPerHour)
+            creditsPerHour: Number(form.creditsPerHour),
+            isMovable: form.isMovable
           })
         }
       );
@@ -112,48 +124,99 @@ export default function ResourceManagement() {
       if (!res.ok) throw new Error(data.error);
 
       setEditingResource(null);
-      fetchResources();
+      await fetchResources();
+      toast.success('Resource updated successfully');
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message || 'Failed to update resource');
     } finally {
       setLoading(false);
     }
   };
 
   /* ================= TOGGLE ================= */
-  const toggleResource = async resource => {
-    if (!window.confirm(`${resource.isActive ? 'Disable' : 'Enable'} this resource?`)) return;
+  const closeConfirmDialog = () => {
+    setConfirmDialog(prev => ({ ...prev, open: false, onConfirm: null }));
+  };
 
-    await fetch(`https://localhost/api/resources/${resource.id}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({
-        isActive: !resource.isActive
-      })
+  const runConfirmedAction = async () => {
+    const action = confirmDialog.onConfirm;
+    closeConfirmDialog();
+    if (action) {
+      await action();
+    }
+  };
+
+  const performToggleResource = async resource => {
+    try {
+      const res = await fetch(`https://localhost/api/resources/${resource.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          isActive: !resource.isActive
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update resource status');
+
+      await fetchResources();
+      toast.success(resource.isActive ? 'Resource disabled' : 'Resource enabled');
+    } catch (err) {
+      toast.error(err.message || 'Failed to update resource status');
+    }
+  };
+
+  const toggleResource = (resource) => {
+    const actionText = resource.isActive ? 'Disable' : 'Enable';
+    setConfirmDialog({
+      open: true,
+      title: `${actionText} this resource?`,
+      description: `This will ${resource.isActive ? 'hide' : 'show'} the resource for users.`,
+      confirmText: actionText,
+      destructive: false,
+      onConfirm: () => performToggleResource(resource)
     });
-
-    fetchResources();
   };
 
   /* ================= DELETE ================= */
-  const deleteResource = async id => {
-    if (!window.confirm('Delete this resource?')) return;
+  const performDeleteResource = async id => {
+    try {
+      const res = await fetch(`https://localhost/api/resources/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
 
-    await fetch(`https://localhost/api/resources/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to delete resource');
+
+      await fetchResources();
+      toast.success('Resource deleted successfully');
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete resource');
+    }
+  };
+
+  const deleteResource = (id) => {
+    setConfirmDialog({
+      open: true,
+      title: 'Delete this resource?',
+      description: 'This action cannot be undone.',
+      confirmText: 'Delete',
+      destructive: true,
+      onConfirm: () => performDeleteResource(id)
     });
-
-    fetchResources();
   };
 
   return (
     <AdminLayout>
+      <Helmet>
+        <title>Resource Management</title>
+      </Helmet>
       <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300">
         <div className="flex items-start justify-between mb-6">
           <div>
@@ -240,6 +303,12 @@ export default function ResourceManagement() {
                   <p className="text-sm text-gray-500 mt-1">
                     Credits: {resource.creditsPerHour}/hr
                   </p>
+                  <p className={`text-xs mt-2 inline-flex items-center rounded-full px-2 py-1 ${resource.isMovable
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-amber-100 text-amber-700'
+                    }`}>
+                    {resource.isMovable ? 'Movable' : 'Fixed'}
+                  </p>
 
                   <div className="flex gap-4 mt-6">
                     <button
@@ -299,6 +368,12 @@ export default function ResourceManagement() {
                   <p className="text-sm text-gray-500 mt-1">
                     Credits: {resource.creditsPerHour}/hr
                   </p>
+                  <p className={`text-xs mt-2 inline-flex items-center rounded-full px-2 py-1 ${resource.isMovable
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-slate-100 text-slate-700'
+                    }`}>
+                    {resource.isMovable ? 'Movable' : 'Fixed'}
+                  </p>
 
                   <div className="flex gap-4 mt-6">
                     <button
@@ -340,12 +415,10 @@ export default function ResourceManagement() {
                   Update resource details and credits.
                 </p>
               </div>
-              <button onClick={() => setEditingResource(null)} className='cursor-pointer'>✕</button>
+              <button onClick={() => setEditingResource(null)} className='cursor-pointer'>X</button>
             </div>
 
             <div className="p-5">
-              {error && <p className="text-red-600">{error}</p>}
-
               <input
                 className="border p-3 w-full mb-2 rounded-xl active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
                 value={form.name}
@@ -371,6 +444,18 @@ export default function ResourceManagement() {
                   setForm({ ...form, creditsPerHour: e.target.value })
                 }
               />
+
+              <select
+                className="border p-3 w-full mb-2 rounded-xl active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
+                value={form.isMovable ? 'true' : 'false'}
+                onChange={e =>
+                  setForm({ ...form, isMovable: e.target.value === 'true' })
+                }
+              >
+                <option value="" disabled>Movable</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
             </div>
 
             <div className="flex justify-end gap-3 p-5">
@@ -395,6 +480,15 @@ export default function ResourceManagement() {
           </div>
         </div>
       )}
+      <AlertDialog
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        confirmText={confirmDialog.confirmText}
+        destructive={confirmDialog.destructive}
+        onCancel={closeConfirmDialog}
+        onConfirm={runConfirmedAction}
+      />
     </AdminLayout>
   );
 }

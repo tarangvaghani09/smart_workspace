@@ -17,7 +17,7 @@ app.set('trust proxy', 'loopback');
 app.use(express.static(path.join(process.cwd(), 'src/public')));
 
 app.use(cors({
-  origin: ['http://localhost:5173', "http://192.168.5.91:3000"],
+  origin: ['http://localhost:5173', 'http://192.168.5.91:3000'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -32,35 +32,35 @@ const __dirname = path.dirname(__filename);
 
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
-  customSiteTitle: 'Workspace Booking API Docs'
-})
+app.use(
+  '/docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    customSiteTitle: 'Workspace Booking API Docs'
+  })
 );
 
 const PORT = process.env.PORT || 3000;
 
 async function start() {
   try {
-    // Test Database Connection
     await sequelize.authenticate();
-    console.log('✅ Database connected successfully');
+    console.log('Database connected successfully');
 
     const tmpDir = path.join(__dirname, '..', 'tmp');
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
 
-    await sequelize.sync();
-    console.log('✅ Database synchronized');
+    await sequelize.sync({ alter: true });
+    console.log('Database synchronized');
 
     app.listen(PORT, () => {
-      console.log(`🚀 Smart Workspace backend listening at http://localhost:${PORT}`);
-      console.log('📄 Swagger docs at http://localhost:3000/docs');
+      console.log(`Smart Workspace backend listening at http://localhost:${PORT}`);
+      console.log('Swagger docs at http://192.168.5.91:3000/docs');
     });
 
-    // start cron jobs
     cronJobs.startAll();
-
   } catch (err) {
-    console.error('❌ Failed to connect to database:', err.message);
+    console.error('Failed to connect to database:', err.message);
     process.exit(1);
   }
 }

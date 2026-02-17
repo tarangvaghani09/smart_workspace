@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from 'react-toastify';
 
 export default function BookingForm() {
   const token = localStorage.getItem('token');
@@ -12,15 +13,23 @@ export default function BookingForm() {
       endTime: new Date(`${e.target.date.value}T${e.target.end.value}:00+05:30`).toISOString()
     };
 
-    const res = await fetch('https://localhost/api/bookings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(payload)
-    });
+    try {
+      const res = await fetch('https://localhost/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
 
-    if (!res.ok) { alert('Booking failed'); return; }
-    alert('Booking created successfully');
-    window.location.reload();
+      if (!res.ok) {
+        toast.error('Booking failed');
+        return;
+      }
+
+      toast.success('Booking created successfully');
+      window.location.reload();
+    } catch {
+      toast.error('Booking failed');
+    }
   };
 
   return (

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 function Register() {
   const navigate = useNavigate();
@@ -12,9 +15,9 @@ function Register() {
   });
 
   const [departments, setDepartments] = useState([]);
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
   //  DEPARTMENTS 
   useEffect(() => {
@@ -24,7 +27,10 @@ function Register() {
         console.log('Departments:', data)
         setDepartments(Array.isArray(data) ? data : []);
       })
-      .catch(() => setError({general:'Failed to load departments'}));
+      .catch(() => {
+        setError({ general: 'Failed to load departments' });
+        toast.error('Failed to load departments');
+      });
   }, []);
 
   const handleChange = (e) => {
@@ -39,10 +45,15 @@ function Register() {
     setError({});
 
     try {
+      const payload = {
+        ...form,
+        departmentId: form.departmentId ? Number(form.departmentId) : undefined
+      };
+
       const res = await fetch('https://localhost/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
@@ -60,7 +71,7 @@ function Register() {
         return;
       }
 
-      setSuccess('Registration successful! Redirecting to login...');
+      toast.success('Registration successful!');
       setTimeout(() => {
         navigate('/');
       }, 200);
@@ -73,6 +84,9 @@ function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Helmet>
+        <title>Register</title>
+      </Helmet>
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
 
         {/* Heading */}
@@ -155,14 +169,21 @@ function Register() {
                   </svg>
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={form.password}
                   onChange={handleChange}
                   required
                   placeholder="••••••••"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
+                  className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 cursor-pointer"
+                >
+                  {showPassword ? <FiEyeOff className="h-4 w-4" /> : <FiEye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 
@@ -224,31 +245,6 @@ function Register() {
             </button>
           </div>
         </form>
-
-        {success && (
-          <div className="rounded-md bg-green-50 p-4 border border-green-200 animate-fade-in">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414L9 13.414l4.707-4.707z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-green-800">
-                  Success
-                </h3>
-                <div className="mt-1 text-sm text-green-700">
-                  {success}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {Object.keys(error).length > 0 && (
           <div className="rounded-md bg-red-50 p-4 border border-red-200 animate-fade-in">

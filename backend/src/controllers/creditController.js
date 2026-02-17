@@ -33,14 +33,14 @@ const getCredits = async (req, res) => {
     }
 
     // console.log('Credits fetched:', credit);
-    res.json({
+    return res.json({
       availableCredits: credit.availableCredits,
       lockedCredits: credit.lockedCredits,
       month,
       year
     });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    return res.status(400).json({ error: err.message });
   }
 };
 

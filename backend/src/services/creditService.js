@@ -2,8 +2,7 @@
 import { DepartmentCredit } from '../models/index.js';
 
 //  Helpers
-
-function currentMonthYear() {
+export function currentMonthYear() {
   const now = new Date();
   return {
     month: now.getMonth() + 1,

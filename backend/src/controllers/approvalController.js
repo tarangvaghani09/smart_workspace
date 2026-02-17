@@ -1,11 +1,58 @@
 // controllers/approvalController.js
-import { Booking, Room, Resource, sequelize, Department, User, BookingRoom } from '../models/index.js';
+import { Booking, Room, Resource, sequelize, Department, User } from '../models/index.js';
 import { emailQueue } from '../queues/emailQueue.js';
+import { QueryTypes } from 'sequelize';
 import {
   deductLockedCredits,
   releaseLockedCredits
 } from '../services/creditService.js';
 import emailService from '../services/emailService.js';
+import { returnResourcesForBooking } from '../services/resourceReturnService.js';
+
+const attachAggregatedResources = async (bookings) => {
+  const plainBookings = bookings.map((b) => (b?.toJSON ? b.toJSON() : b));
+  if (plainBookings.length === 0) return plainBookings;
+
+  const bookingIds = plainBookings.map((b) => b.id).filter(Boolean);
+  if (bookingIds.length === 0) return plainBookings;
+
+  const rows = await sequelize.query(
+    `
+      SELECT
+        br.bookingId AS bookingId,
+        br.resourceId AS resourceId,
+        r.name AS resourceName,
+        SUM(br.quantity) AS quantity
+      FROM booking_resources br
+      INNER JOIN resource r ON r.id = br.resourceId
+      WHERE br.bookingId IN (:bookingIds)
+      GROUP BY br.bookingId, br.resourceId, r.name
+    `,
+    {
+      replacements: { bookingIds },
+      type: QueryTypes.SELECT
+    }
+  );
+
+  const byBooking = new Map();
+  for (const row of rows) {
+    const bookingId = Number(row.bookingId);
+    const resource = {
+      id: Number(row.resourceId),
+      name: row.resourceName,
+      BookingResource: {
+        quantity: Number(row.quantity) || 0
+      }
+    };
+    if (!byBooking.has(bookingId)) byBooking.set(bookingId, []);
+    byBooking.get(bookingId).push(resource);
+  }
+
+  return plainBookings.map((b) => ({
+    ...b,
+    Resources: byBooking.get(Number(b.id)) || (Array.isArray(b.Resources) ? b.Resources : [])
+  }));
+};
 
 export const getPendingBookings = async (req, res) => {
   try {
@@ -34,8 +81,7 @@ export const getPendingBookings = async (req, res) => {
         },
         {
           model: Room,
-          attributes: ['id', 'name', 'type'],
-          through: { attributes: [] } // hides booking_rooms
+          attributes: ['id', 'name', 'type']
         },
         {
           model: Resource,
@@ -47,10 +93,11 @@ export const getPendingBookings = async (req, res) => {
       order: [['createdAt', 'ASC']]
     });
 
-    res.json(pendingBookings);
+    const withTotals = await attachAggregatedResources(pendingBookings);
+    return res.json(withTotals);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
 
@@ -60,7 +107,10 @@ export const approveBooking = async (req, res) => {
 
   const t = await sequelize.transaction();
   try {
-    const booking = await Booking.findByPk(bookingId, { transaction: t });
+    const booking = await Booking.findByPk(bookingId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE
+    });
 
     if (!booking || booking.status !== 'PENDING') {
       throw new Error('Invalid booking');
@@ -72,7 +122,11 @@ export const approveBooking = async (req, res) => {
         booking.creditsUsed,
         t
       );
+      if (!booking.checkedOut) {
+        await returnResourcesForBooking(booking.id, t);
+      }
       booking.status = 'REJECTED';
+      // booking.checkedOut = true;
       booking.decidedBy = admin.id;
       await booking.save({ transaction: t });
       await t.commit();
@@ -99,10 +153,10 @@ export const approveBooking = async (req, res) => {
     await emailQueue.add('booking-confirmed', {
       bookingId: booking.id
     });
-    res.json({ ok: true });
+    return res.json({ ok: true });
   } catch (err) {
     await t.rollback();
-    res.status(400).json({ error: err.message });
+    return res.status(400).json({ error: err.message });
   }
 };
 

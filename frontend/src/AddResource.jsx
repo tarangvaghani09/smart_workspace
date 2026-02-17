@@ -1,20 +1,29 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
+import { toast } from 'react-toastify';
+
+function getApiErrorMessage(data, fallback) {
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    return data.errors
+      .map(item => item?.message || item?.field)
+      .filter(Boolean)
+      .join(' | ');
+  }
+
+  return data?.error || data?.message || fallback;
+}
 
 export default function AddResource() {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [creditsPerHour, setCreditsPerHour] = useState('');
+  const [isMovable, setIsMovable] = useState('');
 
   const handleSubmit = async () => {
-    setError('');
-    setSuccess('');
-
-    if (!name || !quantity || !creditsPerHour) {
-      setError('Resource name, quantity and credits per hour are required');
+    if (!name || !quantity || !creditsPerHour || isMovable === '') {
+      toast.error('Resource name, quantity, credits per hour and movable selection are required');
       return;
     }
 
@@ -30,22 +39,24 @@ export default function AddResource() {
         body: JSON.stringify({
           name,
           quantity: Number(quantity),
-          creditsPerHour: Number(creditsPerHour)
+          creditsPerHour: Number(creditsPerHour),
+          isMovable: isMovable === 'true'
         })
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to create resource');
+        throw new Error(getApiErrorMessage(data, 'Failed to create resource'));
       }
 
-      setSuccess('Resource created successfully');
+      toast.success('Resource created successfully');
       setName('');
       setQuantity('');
       setCreditsPerHour('');
+      setIsMovable('');
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message || 'Failed to create resource');
     } finally {
       setLoading(false);
     }
@@ -53,11 +64,11 @@ export default function AddResource() {
 
   return (
     <AdminLayout>
+      <Helmet>
+        <title>Add Resource</title>
+      </Helmet>
       <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300 max-w-xl">
         <h2 className="text-2xl font-bold mb-4">Add New Resource</h2>
-
-        {error && <p className="text-red-600 mb-3">{error}</p>}
-        {success && <p className="text-green-600 mb-3">{success}</p>}
 
         <input
           className="border p-3 w-full mb-3 rounded-xl border-gray-300 text-gray-600 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
@@ -84,12 +95,22 @@ export default function AddResource() {
           onChange={e => setCreditsPerHour(e.target.value)}
         />
 
+        <select
+          className="border p-3 w-full mb-3 rounded-xl border-gray-300 text-gray-600 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
+          value={isMovable}
+          onChange={e => setIsMovable(e.target.value)}
+        >
+          <option value="">Movable</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+
         <button
           onClick={handleSubmit}
           disabled={loading}
           className="bg-blue-600 text-white px-4 py-2 mt-2 rounded-lg disabled:opacity-50 cursor-pointer hover:bg-blue-700 transition-colors duration-75"
         >
-          {loading ? 'Saving...' : 'Save Room'}
+          {loading ? 'Saving...' : 'Save Resource'}
         </button>
       </div>
     </AdminLayout>

@@ -1,10 +1,22 @@
 import { useEffect, useState, useRef } from 'react';
 import React from 'react';
+import { Helmet } from 'react-helmet';
+import { toast } from 'react-toastify';
+import AlertDialog from './components/AlertDialog';
 
 export default function BookingList() {
   const [bookings, setBookings] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(null);
+  const [now, setNow] = useState(Date.now());
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    description: '',
+    confirmText: 'Confirm',
+    destructive: false,
+    onConfirm: null
+  });
   const menuRef = useRef(null);
 
   const token = localStorage.getItem('token');
@@ -28,16 +40,26 @@ export default function BookingList() {
     })
       .then(res => res.json())
       .then(setBookings);
-    //  .then(console.log.bind(console, 'bookings'), setBookings);
   }, []);
 
-  const cancelBooking = async (bookingId) => {
-    const ok = window.confirm(
-      'Cancel this booking?\n\n• 90% refund if cancelled before 48 hours'
-    );
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(id);
+  }, []);
 
-    if (!ok) return;
+  const runConfirmedAction = async () => {
+    const action = confirmDialog.onConfirm;
+    setConfirmDialog(prev => ({ ...prev, open: false, onConfirm: null }));
+    if (action) {
+      await action();
+    }
+  };
 
+  const closeConfirmDialog = () => {
+    setConfirmDialog(prev => ({ ...prev, open: false, onConfirm: null }));
+  };
+
+  const performCancelBooking = async (bookingId) => {
     const res = await fetch(
       `https://localhost/api/bookings/${bookingId}/cancel`,
       {
@@ -51,13 +73,11 @@ export default function BookingList() {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.error || 'Failed to cancel booking');
+      toast.error(data.error || 'Failed to cancel booking');
       return;
     }
+    toast.success('Booking cancelled successfully');
 
-    // alert('✅ Booking cancelled');
-
-    // refresh list
     setBookings(prev =>
       prev.map(b =>
         b.id === bookingId ? { ...b, status: 'CANCELLED' } : b
@@ -67,10 +87,19 @@ export default function BookingList() {
     setOpenMenuId(null);
   };
 
-  const checkInBooking = async (bookingId) => {
-    const ok = window.confirm('Check in to this booking now?');
-    if (!ok) return;
+  const cancelBooking = (bookingId) => {
+    setOpenMenuId(null);
+    setConfirmDialog({
+      open: true,
+      title: 'Cancel this booking?',
+      description: '90% refund if cancelled before 48 hours.',
+      confirmText: 'Cancel Booking',
+      destructive: true,
+      onConfirm: () => performCancelBooking(bookingId)
+    });
+  };
 
+  const performCheckInBooking = async (bookingId) => {
     const res = await fetch(
       `https://localhost/api/bookings/${bookingId}/check-in`,
       {
@@ -84,13 +113,11 @@ export default function BookingList() {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.error || 'Check-in failed');
+      toast.error(data.error || 'Check-in failed');
       return;
     }
+    toast.success('Checked in successfully');
 
-    // alert('✅ Checked in successfully');
-
-    // update UI
     setBookings(prev =>
       prev.map(b =>
         b.id === bookingId ? { ...b, checkedIn: true } : b
@@ -100,10 +127,18 @@ export default function BookingList() {
     setOpenMenuId(null);
   };
 
-  const checkOutBooking = async (bookingId) => {
-    const ok = window.confirm('Check out of this room now?');
-    if (!ok) return;
+  const checkInBooking = (bookingId) => {
+    setConfirmDialog({
+      open: true,
+      title: 'Check in now?',
+      description: 'You can only do this during your booking window.',
+      confirmText: 'Check In',
+      destructive: false,
+      onConfirm: () => performCheckInBooking(bookingId)
+    });
+  };
 
+  const performCheckOutBooking = async (bookingId) => {
     const res = await fetch(
       `https://localhost/api/bookings/${bookingId}/check-out`,
       {
@@ -117,11 +152,10 @@ export default function BookingList() {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.error || 'Check-out failed');
+      toast.error(data.error || 'Check-out failed');
       return;
     }
-
-    // alert('✅ Checked out successfully');
+    toast.success('Checked out successfully');
 
     setBookings(prev =>
       prev.map(b =>
@@ -134,6 +168,16 @@ export default function BookingList() {
     setOpenMenuId(null);
   };
 
+  const checkOutBooking = (bookingId) => {
+    setConfirmDialog({
+      open: true,
+      title: 'Check out now?',
+      description: 'This will mark your booking as checked out.',
+      confirmText: 'Check Out',
+      destructive: false,
+      onConfirm: () => performCheckOutBooking(bookingId)
+    });
+  };
 
   const filteredBookings = bookings.filter(b => {
     if (selectedMonth === null) return true;
@@ -141,27 +185,33 @@ export default function BookingList() {
     return bookingMonth === selectedMonth;
   });
 
+  const canShowCheckIn = (startTime, endTime) => {
+    const startMs = Date.parse(startTime);
+    const endMs = Date.parse(endTime);
+    return Number.isFinite(startMs) && Number.isFinite(endMs) && now >= startMs && now < endMs;
+  };
+
+  const isBookingEnded = (endTime) => {
+    const endMs = Date.parse(endTime);
+    return Number.isFinite(endMs) && now >= endMs;
+  };
+
   return (
     <div>
-      {/* PAGE WRAPPER */}
-      {/* CARD */}
-      {/* <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8"> */}
-      {/* <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-black text-gray-800 flex items-center gap-2">
-                <span className="text-indigo-600">📋</span> My Bookings
-              </h2>
-              <span className="bg-indigo-50 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full">
-                {bookings.length} Total
-              </span>
-            </div> */}
+      <Helmet>
+        <title>My Bookings</title>
+      </Helmet>
       {filteredBookings && (
         <div className="mb-4 flex items-center justify-between">
-          {/* LEFT */}
-          <p className="text-3xl font-display font-bold text-slate-900">
-            Room Bookings
-          </p>
+          <div>
+            <p className="text-3xl font-display font-bold text-slate-900">
+              Room Bookings
+            </p>
+            <p className="mt-1 text-slate-400">
+              View and manage your room bookings.
+            </p>
+          </div>
 
-          {/* RIGHT */}
           <div className="flex items-center gap-3">
             <label className="text-sm font-semibold text-gray-600">
               Filter by Month:
@@ -185,12 +235,10 @@ export default function BookingList() {
       <div className='bg-white rounded-[2rem] shadow-sm overflow-hidden'>
         <div className="space-y-3">
           {filteredBookings?.map(b => (
-            // console.log('booking item:', b) ||
             <div
               key={b.id}
               className="group border border-gray-100 rounded-2xl p-5 flex items-center gap-6 hover:shadow-lg hover:border-indigo-100 transition-all duration-300"
             >
-              {/* DATE */}
               <div className="bg-gray-50 rounded-xl px-5 py-3 text-center border border-gray-100 min-w-[90px] group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors">
                 <p className="text-[10px] uppercase font-black text-gray-400 tracking-tighter group-hover:text-indigo-400">
                   {new Date(b.startTime).toLocaleString('default', { month: 'short' })}
@@ -200,7 +248,6 @@ export default function BookingList() {
                 </p>
               </div>
 
-              {/* DETAILS */}
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="font-bold text-gray-800 text-lg leading-tight">
@@ -216,14 +263,11 @@ export default function BookingList() {
                           : 'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
                       }`}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-alert w-3 h-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
-
                     <span className='ml-1 flex items-center justify-center'>{b.status}</span>
                   </span>
                   {b.status === 'CONFIRMED' && (
                     b.checkedIn && (
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider inline-flex gap-1 items-center text-xs font-semibold border bg-green-500/10 text-green-600 border-green-500/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-alert w-3 h-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
                         Checked In
                       </span>
                     )
@@ -231,55 +275,46 @@ export default function BookingList() {
 
                   {b.checkedOut && (
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider inline-flex gap-1 items-center text-xs font-semibold border bg-blue-500/10 text-blue-600 border-blue-500/20">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-alert w-3 h-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
                       Checked Out
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center gap-4 text-xs font-bold text-gray-500 flex-wrap">
-
-                  {/* TIME */}
                   <span>
-                    🕒 {new Date(b.startTime).toLocaleTimeString([], {
+                    {new Date(b.startTime).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit'
                     })}
                   </span>
 
-                  {/* 🏢 ROOM */}
-                  {b.Rooms?.length > 0 && (
+                  {(b.Room?.name || b.Rooms?.[0]?.name) && (
                     <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600">
-                      📍 {b.Rooms[0].name}
+                      📍 {b.Room?.name || b.Rooms?.[0]?.name}
                     </span>
                   )}
 
-                  {/* 🔌 DEVICE */}
                   {b.Resources?.length > 0 && (
                     <span className="px-2 py-0.5 rounded bg-orange-50 text-orange-600">
                       🔌 {b.Resources.map(r =>
                         `${r.name}${r.BookingResource?.quantity > 1
-                          ? ` × ${r.BookingResource.quantity}`
+                          ? ` x ${r.BookingResource.quantity}`
                           : ''}`
                       ).join(', ')}
                     </span>
                   )}
 
-                  {/* credit */}
                   {b.creditsUsed && (
                     <span className="px-2 py-0.5 rounded bg-white text-slate-700 border border-slate-200">
-                      💳  {b.creditsUsed} credits
+                      💳 {b.creditsUsed} credits
                     </span>
                   )}
 
                 </div>
               </div>
 
-              {/* MENU */}
               <div className="flex items-center gap-6 relative">
-
-                {/* ✅ CHECK-IN */}
-                {b.status === 'CONFIRMED' && !b.checkedIn && (
+                {b.status === 'CONFIRMED' && !b.checkedIn && canShowCheckIn(b.startTime, b.endTime) && (
                   <button
                     onClick={() => checkInBooking(b.id)}
                     className="px-3 py-1.5 text-xs font-bold rounded-lg bg-green-600 text-white hover:bg-green-700 cursor-pointer"
@@ -288,8 +323,7 @@ export default function BookingList() {
                   </button>
                 )}
 
-                {/* ✅ CHECK-OUT */}
-                {b.status === 'CONFIRMED' && b.checkedIn && !b.checkedOut && (
+                {b.status === 'CONFIRMED' && b.checkedIn && !b.checkedOut && !isBookingEnded(b.endTime) && (
                   <button
                     onClick={() => checkOutBooking(b.id)}
                     className="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
@@ -298,8 +332,7 @@ export default function BookingList() {
                   </button>
                 )}
 
-                {/* ❌ Hide 3-dot menu after check-in */}
-                {!b.checkedIn && b.status !== 'CANCELLED' && b.status !== 'NO_SHOW' && b.status !== 'REJECTED' && (
+                {!b.checkedIn && b.status !== 'CANCELLED' && b.status !== 'NO_SHOW' && b.status !== 'REJECTED' && !isBookingEnded(b.endTime) && (
                   <button
                     onClick={() =>
                       setOpenMenuId(openMenuId === b.id ? null : b.id)
@@ -310,7 +343,6 @@ export default function BookingList() {
                   </button>
                 )}
 
-                {/* CANCEL ONLY IF NOT CHECKED IN */}
                 {openMenuId === b.id && !b.checkedIn && (
                   <div
                     ref={menuRef}
@@ -337,10 +369,16 @@ export default function BookingList() {
             </div>
           )}
         </div>
-        {/* </div> */}
-
-
       </div>
+      <AlertDialog
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        confirmText={confirmDialog.confirmText}
+        destructive={confirmDialog.destructive}
+        onCancel={closeConfirmDialog}
+        onConfirm={runConfirmedAction}
+      />
     </div>
   );
 }

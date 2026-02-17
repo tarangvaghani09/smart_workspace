@@ -37,8 +37,9 @@ import RoomModel from './room.js';
 import ResourceModel from './resource.js';
 import BookingModel from './booking.js';
 import BookingResourceModel from './booking_resources.js';
-import BookingRoomModel from './booking_rooms.js';
 import DepartmentCreditModel from './departmentCredit.js';
+import RoomResourceInventoryModel from './roomResourceInventory.js';
+import PasswordResetTokenModel from './passwordResetToken.js';
 
 const User = UserModel(sequelize);
 const Department = DepartmentModel(sequelize);
@@ -46,8 +47,9 @@ const Room = RoomModel(sequelize);
 const Resource = ResourceModel(sequelize);
 const Booking = BookingModel(sequelize);
 const BookingResource = BookingResourceModel(sequelize);
-const BookingRoom = BookingRoomModel(sequelize);
 const DepartmentCredit = DepartmentCreditModel(sequelize);
+const RoomResourceInventory = RoomResourceInventoryModel(sequelize);
+const PasswordResetToken = PasswordResetTokenModel(sequelize);
 
 // Department → Users
 Department.hasMany(User, { foreignKey: 'departmentId' });
@@ -67,36 +69,26 @@ Department.hasMany(Booking, { foreignKey: 'departmentId' });
 
 // Booking ↔ Resources (M:N)
 Booking.belongsToMany(Resource, {
-  through: BookingResource,
+  through: {
+    model: BookingResource,
+    unique: false
+  },
   foreignKey: 'bookingId',
   otherKey: 'resourceId'
 });
 
 Resource.belongsToMany(Booking, {
-  through: BookingResource,
+  through: {
+    model: BookingResource,
+    unique: false
+  },
   foreignKey: 'resourceId',
   otherKey: 'bookingId'
 });
 
-// Booking ↔ Room (1:1 via booking_rooms)
-// Booking.hasOne(BookingRoom, { foreignKey: 'bookingId' });
-// BookingRoom.belongsTo(Booking, { foreignKey: 'bookingId' });
-
-// Room.hasMany(BookingRoom, { foreignKey: 'roomId' });
-// BookingRoom.belongsTo(Room, { foreignKey: 'roomId' });
-
-// Booking ↔ Room (via booking_rooms)
-Booking.belongsToMany(Room, {
-  through: BookingRoom,
-  foreignKey: 'bookingId',
-  otherKey: 'roomId'
-});
-
-Room.belongsToMany(Booking, {
-  through: BookingRoom,
-  foreignKey: 'roomId',
-  otherKey: 'bookingId'
-});
+// Booking -> Room (direct FK on bookings.roomId)
+Booking.belongsTo(Room, { foreignKey: 'roomId' });
+Room.hasMany(Booking, { foreignKey: 'roomId' });
 
 // Booking ↔ Resource (M:N)
 Booking.hasMany(BookingResource, { foreignKey: 'bookingId' });
@@ -104,6 +96,15 @@ BookingResource.belongsTo(Booking, { foreignKey: 'bookingId' });
 
 Resource.hasMany(BookingResource, { foreignKey: 'resourceId' });
 BookingResource.belongsTo(Resource, { foreignKey: 'resourceId' });
+
+Room.hasMany(RoomResourceInventory, { foreignKey: 'roomId' });
+RoomResourceInventory.belongsTo(Room, { foreignKey: 'roomId' });
+
+Resource.hasMany(RoomResourceInventory, { foreignKey: 'resourceId' });
+RoomResourceInventory.belongsTo(Resource, { foreignKey: 'resourceId' });
+
+User.hasMany(PasswordResetToken, { foreignKey: 'userId' });
+PasswordResetToken.belongsTo(User, { foreignKey: 'userId' });
 
 export {
   sequelize,
@@ -114,6 +115,7 @@ export {
   Resource,
   Booking,
   BookingResource,
-  BookingRoom,
-  DepartmentCredit
+  DepartmentCredit,
+  RoomResourceInventory,
+  PasswordResetToken
 };

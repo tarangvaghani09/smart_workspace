@@ -20,9 +20,7 @@ security:
 
 tags:
   - name: Auth
-  # - name: Rooms
   - name: Bookings
-  # - name: Approvals
   - name: Credits / Department
   - name: Search
   - name: Resources
@@ -96,6 +94,92 @@ paths:
         500:
           description: Server error
 
+  /change-password:
+    patch:
+      tags: [Auth]
+      summary: Change password (authenticated user)
+      description: Update account password using current password verification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        200:
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        400:
+          description: Validation failed or current password is incorrect
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ValidationErrorResponse'
+                  - $ref: '#/components/schemas/MessageResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  /forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request password reset
+      description: Sends password reset link/token to email if account exists.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        200:
+          description: Neutral success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        400:
+          description: Validation failed
+
+  /reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password using token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        200:
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        400:
+          description: Invalid/expired token or validation failed
+        404:
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
   /bookings:
     post:
       tags: [Bookings]
@@ -123,6 +207,8 @@ paths:
     get:
       tags: [Bookings]
       summary: List user bookings
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: List of bookings
@@ -131,6 +217,7 @@ paths:
     get:
       tags: [Bookings]
       summary: List all departments
+      security: []
       responses:
         200:
           description: Show all departments
@@ -139,6 +226,8 @@ paths:
     get:
       tags: [Bookings]
       summary: Get booking by ID
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
@@ -151,6 +240,8 @@ paths:
     post:
       tags: [Bookings]
       summary: Check-in booking
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
@@ -161,6 +252,8 @@ paths:
     post:
       tags: [Bookings]
       summary: Check-out booking
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
@@ -171,6 +264,8 @@ paths:
     post:
       tags: [Bookings]
       summary: Cancel booking
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
@@ -203,6 +298,8 @@ paths:
     get:
       tags: [Credits / Department]
       summary: Get department credits
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: Credit balance
@@ -219,6 +316,8 @@ paths:
     post:
       tags: [Search]
       summary: Search available rooms
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -232,6 +331,8 @@ paths:
     post:
       tags: [Admin]
       summary: Create room
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -248,6 +349,8 @@ paths:
     put:
       tags: [Admin]
       summary: Update room
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
       requestBody:
@@ -261,6 +364,8 @@ paths:
     delete:
       tags: [Admin]
       summary: Delete room
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
@@ -273,6 +378,8 @@ paths:
     patch:
       tags: [Admin]
       summary: Toggle Room Status
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
@@ -283,6 +390,8 @@ paths:
     get:
       tags: [Admin]
       summary: List pending bookings
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: Pending bookings
@@ -291,6 +400,8 @@ paths:
     post:
       tags: [Admin]
       summary: Approve or reject booking
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -305,6 +416,8 @@ paths:
     get:
       tags: [Admin]
       summary: List bookings by department
+      security:
+        - bearerAuth: []
       parameters:
         - in: query
           name: departmentId
@@ -331,6 +444,8 @@ paths:
     get:
       tags: [Resources]
       summary: List resources
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: List of devices
@@ -387,6 +502,8 @@ paths:
     delete:
       tags: [Admin]
       summary: Delete resource
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
@@ -397,6 +514,8 @@ paths:
     patch:
       tags: [Admin]
       summary: Toggle Resource Status
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
@@ -522,8 +641,33 @@ components:
           format: password
           example: "Alice@123"
         departmentId:
+          type: integer
+          example: 1
+
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
           type: string
-          example: "1"
+          format: email
+          example: alice@example.com
+
+    ResetPasswordRequest:
+      type: object
+      required: [token, newPassword, confirmNewPassword]
+      properties:
+        token:
+          type: string
+          example: 9f43d5a20e3d4f78a6f4...
+        newPassword:
+          type: string
+          format: password
+          example: New@1234
+        confirmNewPassword:
+          type: string
+          format: password
+          example: New@1234
 
     RegisterResponse:
       type: object
@@ -573,6 +717,47 @@ components:
             name:
               type: string
               example: Engineering
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Password changed successfully
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Validation failed
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    ChangePasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+        - confirmNewPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+          example: Old@1234
+        newPassword:
+          type: string
+          format: password
+          description: Must contain uppercase, lowercase, number, and special character
+          example: New@1234
+        confirmNewPassword:
+          type: string
+          format: password
+          example: New@1234
 
     RoomCreate:
       type: object

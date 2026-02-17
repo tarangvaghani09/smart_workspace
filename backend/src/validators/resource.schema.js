@@ -20,6 +20,8 @@ export const createResourceSchema = z.object({
     .int('Credits per hour must be an integer')
     .min(1, 'Credits per hour must be at least 1'),
 
+  isMovable: z.boolean().default(true),
+
   isActive: z.boolean().default(true)
 });
 
@@ -43,6 +45,8 @@ export const updateResourceSchema = z.object({
     .int('Credits per hour must be an integer')
     .min(0, 'Credits must be >= 0')
     .optional(),
+
+  isMovable: z.boolean().optional(),
 
   isActive: z.boolean().optional()
 }).refine(data => Object.keys(data).length > 0, {

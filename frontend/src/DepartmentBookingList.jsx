@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
 
 export default function DepartmentBookingList() {
@@ -71,6 +72,9 @@ export default function DepartmentBookingList() {
 
   return (
     <AdminLayout>
+      <Helmet>
+        <title>Department Bookings</title>
+      </Helmet>
       <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300">
 
         {/* HEADER */}
@@ -107,9 +111,16 @@ export default function DepartmentBookingList() {
             </select>
           </div>
         </div>
+
         {/* LOADING */}
         {loading && (
-          <p className="text-gray-400 font-medium">Loading bookings...</p>
+          <p className="p-10 text-center text-gray-400">Loading bookings...</p>
+        )}
+
+        {!loading && bookings.length === 0 && selectedDepartment && (
+          <p className="py-12 text-center text-sm text-gray-400">
+            No bookings found for this department.
+          </p>
         )}
 
         {/* LIST */}
@@ -124,9 +135,7 @@ export default function DepartmentBookingList() {
                 {/* LEFT */}
                 <div className="space-y-1">
                   <h3 className="font-semibold text-gray-900 text-lg">
-                    {b.Rooms?.length > 0
-                      ? b.Rooms[0].name
-                      : 'Resource Booking'}
+                    {b.Room?.name || b.Rooms?.[0]?.name || 'Resource Booking'}
                   </h3>
 
                   <p className="text-xs text-gray-500 font-medium">
@@ -188,11 +197,6 @@ export default function DepartmentBookingList() {
             </div>
           ))}
 
-          {!loading && bookings.length === 0 && selectedDepartment && (
-            <p className="py-12 text-center text-sm font-medium text-gray-400">
-              No bookings found for this department.
-            </p>
-          )}
         </div>
 
       </div>

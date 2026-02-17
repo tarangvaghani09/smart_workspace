@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import BookRoom from './BookRoom';
 import moment from 'moment-timezone';
 
@@ -15,6 +16,7 @@ export default function SearchRooms() {
   const [date, setDate] = useState(moment().format('YYYY-MM-DD'));
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [timeError, setTimeError] = useState('');
 
   // fetch rooms whenever backend-related filters change
   useEffect(() => {
@@ -52,14 +54,86 @@ export default function SearchRooms() {
       setEndTime(autoEnd.format('hh:mm A'));
     }
   }, [startTime]);
+
+  useEffect(() => {
+    if (!startTime && !endTime) {
+      setTimeError('');
+      return;
+    }
+
+    if (!startTime || !endTime) {
+      // Avoid flashing validation while end-time is auto-populated after selecting start time.
+      setTimeError('');
+      return;
+    }
+
+    const startMoment = moment(startTime, 'hh:mm A', true);
+    const endMoment = moment(endTime, 'hh:mm A', true);
+
+    if (!startMoment.isValid() || !endMoment.isValid()) {
+      setTimeError('Invalid time format');
+      return;
+    }
+
+    const officeStart = moment('09:00', 'HH:mm');
+    const officeEnd = moment('17:00', 'HH:mm');
+
+    if (startMoment.isBefore(officeStart) || !startMoment.isBefore(officeEnd)) {
+      setTimeError('Start time must be between 9:00 AM and 4:59 PM');
+      return;
+    }
+
+    if (endMoment.isSameOrBefore(officeStart) || endMoment.isAfter(officeEnd)) {
+      setTimeError('End time must be between 9:01 AM and 5:00 PM');
+      return;
+    }
+
+    if (!endMoment.isAfter(startMoment)) {
+      setTimeError('End time must be after start time');
+      return;
+    }
+
+    setTimeError('');
+  }, [startTime, endTime]);
+
   const fetchRooms = async () => {
+    const hasStart = Boolean(startTime);
+    const hasEnd = Boolean(endTime);
+
+    if (hasStart !== hasEnd) {
+      // Skip request while one of the times is being auto-filled.
+      setTimeError('');
+      setError('');
+      return;
+    }
+
+    if (hasStart && hasEnd) {
+      const startMoment = moment(startTime, 'hh:mm A');
+      const endMoment = moment(endTime, 'hh:mm A');
+      if (!startMoment.isValid() || !endMoment.isValid()) {
+        setTimeError('Invalid time format');
+        setError('Invalid time format');
+        setRooms([]);
+        setFilteredRooms([]);
+        return;
+      }
+      if (!endMoment.isAfter(startMoment)) {
+        setTimeError('End time must be after start time');
+        setError('End time must be after start time');
+        setRooms([]);
+        setFilteredRooms([]);
+        return;
+      }
+    }
+
+    const timezoneGuess = moment.tz.guess();
+    const timezone = moment.tz.zone(timezoneGuess) ? timezoneGuess : 'Asia/Kolkata';
 
     const payload = {
       date,
       capacity: capacity ? Number(capacity) : undefined,
-      timezone: moment.tz.guess(),
-      ...(startTime && { startTime }),
-      ...(endTime && { endTime }),
+      timezone,
+      ...(hasStart && hasEnd && { startTime, endTime }),
     };
 
     try {
@@ -75,11 +149,13 @@ export default function SearchRooms() {
       const data = await res.json();
 
       if (!res.ok) {
+        setTimeError(data.error || 'Invalid time selection');
         setError(data.error || 'Invalid time selection');
         setRooms([]);
         setFilteredRooms([]);
         return;
       }
+      setTimeError('');
       setError('');
       setRooms(Array.isArray(data) ? data : []);
       setFilteredRooms(Array.isArray(data) ? data : []);
@@ -113,6 +189,9 @@ export default function SearchRooms() {
 
   return (
     <>
+      <Helmet>
+        <title>Search Rooms</title>
+      </Helmet>
       {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -160,6 +239,8 @@ export default function SearchRooms() {
             </label>
             <input
               type="time"
+              min="09:00"
+              max="16:59"
               value={startTime ? moment(startTime, 'hh:mm A').format('HH:mm') : ""}
               onChange={e =>
                 setStartTime(
@@ -178,6 +259,8 @@ export default function SearchRooms() {
             </label>
             <input
               type="time"
+              min="09:01"
+              max="17:00"
               disabled={!startTime}
               value={endTime ? moment(endTime, 'hh:mm A').format('HH:mm') : ""}
               onChange={e =>
@@ -246,7 +329,7 @@ export default function SearchRooms() {
                 </svg>
                 <div className="z-10 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm text-sm font-semibold tracking-wide text-foreground">
                   {room.type === 'boardroom'
-                    ? 'Boardroom'
+                    ? 'Board Room'
                     : 'Standard Room'}
                 </div>
               </div>

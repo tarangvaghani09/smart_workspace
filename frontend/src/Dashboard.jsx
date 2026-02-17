@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import BookingListHomePage from './BookingListHomePage';
@@ -55,11 +56,34 @@ export default function Dashboard() {
     })
     .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))[0];
 
+  const getResourceNames = (booking) => {
+    if (!booking?.Resources?.length) return '-';
+    return booking.Resources.map((r) =>
+      `${r.name}${r.BookingResource?.quantity > 1 ? ` x ${r.BookingResource.quantity}` : ''}`
+    ).join(', ');
+  };
+
+  const getUpNextLabel = (booking) => {
+    const roomName = booking?.Room?.name || booking?.Rooms?.[0]?.name || '-';
+    const resourceNames = getResourceNames(booking);
+
+    if (booking?.bookingType === 'RESOURCE') {
+      return `Resource: ${resourceNames}`;
+    }
+    if (booking?.bookingType === 'ROOM_RESOURCE') {
+      return `Room + Resource: ${roomName} | ${resourceNames}`;
+    }
+    return `Room: ${roomName}`;
+  };
+
   console.log('Confirmed bookings:', confirmedBookings.length);
   console.log('Up next booking:', upNext);
 
   return (
     <>
+      <Helmet>
+        <title>Dashboard</title>
+      </Helmet>
       <header className="flex justify-between items-start mb-8">
         <div>
           <h1 className="text-4xl font-display font-bold text-slate-900">
@@ -112,6 +136,7 @@ export default function Dashboard() {
           <div className="text-2xl font-display font-bold text-slate-900 truncate">{user?.department?.name || '—'}</div>
           <p className="text-xs text-primary/80 mt-1 font-medium text-blue-700">Standard Allocation</p>
         </div>
+
       </div>
 
       {/* Featured "Up Next" Gradient Card */}
@@ -155,7 +180,7 @@ export default function Dashboard() {
               <p className="mt-5 ml-[-15px] flex items-center gap-2 text-sm text-slate-300">
                 <span className="w-2 h-2 rounded-full bg-accent"></span>
                 <div className="w-2 h-2 rounded-full bg-green-600"></div>
-                Room ID: {upNext.Rooms[0]?.id}
+                {getUpNextLabel(upNext)}
               </p>
             </>
           ) : (

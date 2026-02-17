@@ -1,4 +1,32 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { toast } from 'react-toastify';
+
+const getApiErrorMessage = (data, fallback = 'Booking failed') => {
+  const messages = [];
+
+  if (Array.isArray(data?.errors)) {
+    for (const item of data.errors) {
+      if (typeof item === 'string') messages.push(item);
+      else if (item?.message) messages.push(item.message);
+    }
+  } else if (data?.errors && typeof data.errors === 'object') {
+    for (const value of Object.values(data.errors)) {
+      if (Array.isArray(value)) {
+        for (const msg of value) {
+          if (msg) messages.push(String(msg));
+        }
+      } else if (value) {
+        messages.push(String(value));
+      }
+    }
+  }
+
+  if (messages.length > 0) {
+    return [...new Set(messages)].join(' | ');
+  }
+
+  return data?.error || data?.message || fallback;
+};
 
 export default function BookRoom({ room = null, onClose }) {
   const [title, setTitle] = useState('');
@@ -57,13 +85,49 @@ export default function BookRoom({ room = null, onClose }) {
 
   // fetch resource 
   useEffect(() => {
-    fetch('https://localhost/api/resources', {
+    const params = new URLSearchParams();
+    if (room?.id) params.set('roomId', String(room.id));
+
+    if (date && start) {
+      const startLocal = new Date(`${date}T${start}:00`);
+      const endLocal = new Date(startLocal);
+      endLocal.setHours(endLocal.getHours() + Number(hours || 1));
+      if (!Number.isNaN(startLocal.getTime()) && !Number.isNaN(endLocal.getTime())) {
+        params.set('startTime', startLocal.toISOString());
+        params.set('endTime', endLocal.toISOString());
+      }
+    }
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    fetch(`https://localhost/api/resources${query}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(setAllResources)
       .catch(() => setAllResources([]));
-  }, [token]);
+  }, [token, room?.id, date, start, hours]);
+
+  const getResourceMaxSelectable = (resource) => {
+    const totalAvailableNow =
+      Number.isFinite(resource.availableNow) || typeof resource.availableNow === 'number'
+        ? Number(resource.availableNow)
+        : Number(resource.quantity);
+
+    if (!room) return Math.max(0, totalAvailableNow);
+
+    const bookableNow =
+      Number.isFinite(resource.bookableNow) || typeof resource.bookableNow === 'number'
+        ? Number(resource.bookableNow)
+        : totalAvailableNow;
+
+    const roomCap =
+      Number.isFinite(resource.roomMaxCapacity) || typeof resource.roomMaxCapacity === 'number'
+        ? Number(resource.roomMaxCapacity)
+        : null;
+
+    if (roomCap === null || Number.isNaN(roomCap)) return Math.max(0, bookableNow);
+    return Math.max(0, Math.min(roomCap, bookableNow));
+  };
 
   // room credits
   const roomCredits =
@@ -95,7 +159,7 @@ export default function BookRoom({ room = null, onClose }) {
 
   const submit = async () => {
     if (!title || !date || !start) {
-      alert('❌ Please fill all fields');
+      toast.error('Please fill all fields');
       return;
     }
 
@@ -103,15 +167,27 @@ export default function BookRoom({ room = null, onClose }) {
       bookingTarget !== 'ROOM' &&
       resources.length === 0
     ) {
-      alert('❌ Select at least one device');
+      toast.error('Select at least one device');
       return;
+    }
+
+    if (room && bookingTarget !== 'ROOM') {
+      for (const selected of resources) {
+        const resource = allResources.find(x => x.id === selected.resourceId);
+        if (!resource) continue;
+        const maxSelectable = getResourceMaxSelectable(resource);
+        if (selected.quantity > maxSelectable) {
+          toast.error(resource.name + ' exceeds room max capacity (' + maxSelectable + ')');
+          return;
+        }
+      }
     }
 
     if (
       bookingTarget !== 'DEVICE' &&
       insufficientCredits
     ) {
-      alert('❌ Not enough credits');
+      toast.error('Not enough credits');
       return;
     }
 
@@ -122,10 +198,25 @@ export default function BookRoom({ room = null, onClose }) {
       const endLocal = new Date(startLocal);
       endLocal.setHours(endLocal.getHours() + Number(hours));
 
+      const toAmPm = (d) => {
+        const hh = d.getHours();
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        const ampm = hh >= 12 ? 'PM' : 'AM';
+        const hh12 = String((hh % 12) || 12).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${month}-${day}T${hh12}:${mm} ${ampm}`;
+      };
+
+      const timezone =
+        Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+
       const payload = {
         title,
-        startTime: startLocal.toISOString(),
-        endTime: endLocal.toISOString(),
+        startTime: toAmPm(startLocal),
+        endTime: toAmPm(endLocal),
+        timezone,
         recurrenceType,
         weeks: recurrenceType === 'WEEKLY' ? weeks : 1
       };
@@ -151,19 +242,19 @@ export default function BookRoom({ room = null, onClose }) {
       );
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(getApiErrorMessage(data));
 
       // check status of first booking
       const status = data.bookings?.[0]?.status;
 
       if (status === 'PENDING') {
-        alert('⏳ Booking request sent for approval');
+        toast.info('Booking request sent for approval');
       } else {
-        alert('✅ Booking confirmed successfully');
+        toast.success('Booking confirmed successfully');
       }
       onClose();
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message || 'Booking failed');
     } finally {
       setLoading(false);
     }
@@ -270,6 +361,7 @@ export default function BookRoom({ room = null, onClose }) {
                 const selected = resources.find(
                   x => x.resourceId === r.id
                 );
+                const maxSelectable = getResourceMaxSelectable(r);
 
                 return (
                   <div
@@ -281,6 +373,14 @@ export default function BookRoom({ room = null, onClose }) {
                       <p className="text-xs text-gray-500">
                         {r.creditsPerHour} credits / hour
                       </p>
+                      <p className="text-xs text-gray-500">
+                        Max for this room: {maxSelectable}
+                      </p>
+                      {date && start && (
+                        <p className="text-xs text-gray-500">
+                          Already booked: {r.bookedQty ?? 0} | Available now: {r.availableNow ?? r.quantity} | Bookable now: {r.bookableNow ?? r.availableNow ?? r.quantity}
+                        </p>
+                      )}
                       {selected && (
                         <p className="text-xs text-blue-600">
                           Total: {r.creditsPerHour * selected.quantity * hours} credits
@@ -291,10 +391,11 @@ export default function BookRoom({ room = null, onClose }) {
                     <input
                       type="number"
                       min={0}
-                      max={r.quantity}
+                      max={maxSelectable}
                       value={selected?.quantity || 0}
                       onChange={e => {
-                        const qty = Number(e.target.value);
+                        const rawQty = Number(e.target.value);
+                        const qty = Math.max(0, Math.min(maxSelectable, rawQty));
                         setResources(prev => {
                           const rest = prev.filter(
                             x => x.resourceId !== r.id
@@ -357,3 +458,4 @@ export default function BookRoom({ room = null, onClose }) {
     </div>
   );
 }
+

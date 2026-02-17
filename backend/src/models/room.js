@@ -2,7 +2,7 @@
 import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
-  return sequelize.define(
+  const Room = sequelize.define(
     'Room',
     {
       id: {
@@ -28,7 +28,7 @@ export default (sequelize) => {
       },
 
       type: {
-        type: DataTypes.ENUM('standard', 'boardroom', 'training'),
+        type: DataTypes.ENUM('standard', 'boardroom', 'spare'),
         defaultValue: 'standard'
       },
 
@@ -36,12 +36,17 @@ export default (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 1,
-        validate: { min: 0 }
+        validate: { min: 1 }
       },
 
       isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
+      },
+
+      isDefaultLocation: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
       }
     },
     {
@@ -49,4 +54,33 @@ export default (sequelize) => {
       timestamps: true
     }
   );
+
+  /* ---------------------------------------
+     AFTER CREATE → INIT INVENTORY ROWS
+  ---------------------------------------- */
+  Room.afterCreate(async (room, options) => {
+    const { Resource, RoomResourceInventory } = room.sequelize.models;
+
+    const resources = await Resource.findAll({
+      where: {
+        isActive: true,
+        isMovable: true
+      },
+      transaction: options.transaction
+    });
+
+    for (const resource of resources) {
+      await RoomResourceInventory.create(
+        {
+          roomId: room.id,
+          resourceId: resource.id,
+          maxCapacity: room.type === 'spare' ? resource.quantity : 0,
+          currentAvailable: room.type === 'spare' ? resource.quantity : 0
+        },
+        { transaction: options.transaction }
+      );
+    }
+  });
+
+  return Room;
 };

@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
 import { generateIcsFile } from './icsGenerator.js';
-import { Booking, User, Room, Resource, BookingResource } from '../models/index.js';
+import { Booking, User, Room, Resource, BookingResource, Department } from '../models/index.js';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -16,6 +16,31 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+async function getRoomTextForBooking(booking) {
+  // Current schema has direct FK bookings.roomId -> Room
+  const room = booking.roomId
+    ? await Room.findByPk(booking.roomId)
+    : null;
+
+  return room?.name || 'No room (Device booking)';
+}
+
+async function getDepartmentNameForBooking(booking) {
+  // Prefer booking.departmentId; fallback to user's department for older/incomplete booking rows.
+  let departmentId = booking.departmentId || null;
+
+  if (!departmentId && booking.userId) {
+    const user = await User.findByPk(booking.userId);
+    departmentId = user?.departmentId || null;
+  }
+
+  if (!departmentId) return 'N/A';
+
+  const department = await Department.findByPk(departmentId);
+  const name = department?.name ? String(department.name).trim() : '';
+  return name || 'N/A';
+}
+
 // Send booking confirmation with calendar invite (IST)
 
 async function sendBookingConfirmationEmail(bookingId) {
@@ -23,15 +48,7 @@ async function sendBookingConfirmationEmail(bookingId) {
   if (!booking) throw new Error('Booking not found');
 
   const user = await User.findByPk(booking.userId);
-  const rooms = await booking.getRooms();
-
-  let roomText = 'No room (Device booking)';
-  if (rooms && rooms.length > 0) {
-    roomText = rooms.map(r => r.name).join(', ');
-    console.log('Room booked:', roomText);
-  } else {
-    console.log('No room booked, device-only booking');
-  }
+  const roomText = await getRoomTextForBooking(booking);
 
 
   const bookingResources = await BookingResource.findAll({
@@ -50,6 +67,7 @@ async function sendBookingConfirmationEmail(bookingId) {
   }
 
   const title = booking.title || 'Meeting';
+  const departmentName = await getDepartmentNameForBooking(booking);
   const description =
     `Room: ${roomText}\n` +
     `Resources: ${resourceText}\n` +
@@ -112,10 +130,14 @@ async function sendBookingConfirmationEmail(bookingId) {
                   <td style="padding: 10px;">${booking.uid}</td>
                 </tr>
                 <tr>
+                  <td style="padding: 10px; font-weight: bold;">Department:</td>
+                  <td style="padding: 10px;">${departmentName}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px; font-weight: bold;">Title:</td>
                   <td style="padding: 10px;">${title}</td>
                 </tr>
-                <tr style="background-color: #f9f9f9;">
+                <tr>
                   <td style="padding: 10px; font-weight: bold;">Room:</td>
                   <td style="padding: 10px;">${roomText}</td>
                 </tr>
@@ -178,16 +200,7 @@ async function sendBookingRejectedEmail(bookingId) {
   if (!booking) throw new Error('Booking not found');
 
   const user = await User.findByPk(booking.userId);
-
-  const rooms = await booking.getRooms();
-
-  let roomText = 'No room (Device booking)';
-  if (rooms && rooms.length > 0) {
-    roomText = rooms.map(r => r.name).join(', ');
-    console.log('Room booked:', roomText);
-  } else {
-    console.log('No room booked, device-only booking');
-  }
+  const roomText = await getRoomTextForBooking(booking);
 
   function formatISTDateTime(startTime, endTime) {
     const dateOptions = {
@@ -235,6 +248,7 @@ async function sendBookingRejectedEmail(bookingId) {
   }
 
   const title = booking.title || 'Meeting';
+  const departmentName = await getDepartmentNameForBooking(booking);
 
 
   const mailOptions = {
@@ -253,10 +267,14 @@ async function sendBookingRejectedEmail(bookingId) {
                   <td style="padding: 10px;">${booking.uid}</td>
                 </tr>
                 <tr>
+                  <td style="padding: 10px; font-weight: bold;">Department:</td>
+                  <td style="padding: 10px;">${departmentName}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px; font-weight: bold;">Title:</td>
                   <td style="padding: 10px;">${title}</td>
                 </tr>
-                <tr style="background-color: #f9f9f9;">
+                <tr>
                   <td style="padding: 10px; font-weight: bold;">Room:</td>
                   <td style="padding: 10px;">${roomText}</td>
                 </tr>
@@ -310,15 +328,7 @@ async function sendNoShowNotificationEmail(bookingId) {
       return;
     }
 
-    const rooms = await booking.getRooms();
-
-    let roomText = 'No room (Device booking)';
-    if (rooms && rooms.length > 0) {
-      roomText = rooms.map(r => r.name).join(', ');
-      console.log('Room booked:', roomText);
-    } else {
-      console.log('No room booked, device-only booking');
-    }
+    const roomText = await getRoomTextForBooking(booking);
 
     const user = await User.findByPk(booking.userId);
     if (!user) {
@@ -371,6 +381,9 @@ async function sendNoShowNotificationEmail(bookingId) {
       resourceText = resources.filter(Boolean).join(', ');
     }
 
+    const title = booking.title || 'Meeting';
+    const departmentName = await getDepartmentNameForBooking(booking);
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || process.env.SMTP_USER,
       to: user.email,
@@ -385,6 +398,14 @@ async function sendNoShowNotificationEmail(bookingId) {
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px; font-weight: bold; width: 30%;">Booking ID:</td>
                   <td style="padding: 10px;">${booking.uid}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; font-weight: bold;">Department:</td>
+                  <td style="padding: 10px;">${departmentName}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px; font-weight: bold;">Title:</td>
+                  <td style="padding: 10px;">${title}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px; font-weight: bold;">Room:</td>
@@ -433,8 +454,36 @@ async function sendNoShowNotificationEmail(bookingId) {
   }
 }
 
+async function sendPasswordResetEmail({ to, name, resetLink }) {
+  if (!to || !resetLink) {
+    throw new Error('Missing reset email payload');
+  }
+
+  const mailOptions = {
+    from: process.env.FROM_EMAIL || process.env.SMTP_USER,
+    to,
+    subject: 'Reset your Smart Workspace password',
+    html: `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <div style="max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px;">
+            <h2 style="color: #1d4ed8;">Password Reset Request</h2>
+            <p>Hello ${name || 'User'},</p>
+            <p>Click the link below to reset your password. This link expires in 20 minutes.</p>
+            <p><a href="${resetLink}">${resetLink}</a></p>
+            <p>If you did not request this, you can ignore this email.</p>
+          </div>
+        </body>
+      </html>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
 export default {
   sendBookingConfirmationEmail,
   sendBookingRejectedEmail,
-  sendNoShowNotificationEmail
+  sendNoShowNotificationEmail,
+  sendPasswordResetEmail
 };

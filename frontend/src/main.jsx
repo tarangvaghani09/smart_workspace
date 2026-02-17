@@ -22,7 +22,12 @@ import ResourceManagement from './ResourceManagement';
 import AddResource from './AddResource';
 import DepartmentBookingList from './DepartmentBookingList';
 import Register from './Register';
+import ChangePassword from './ChangePassword';
+import ForgotPassword from './ForgotPassword';
+import ResetPassword from './ResetPassword';
 import { AuthProvider } from './AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <AuthProvider>
@@ -31,6 +36,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         {/* ================= PUBLIC ================= */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         <Route
           element={
@@ -63,6 +70,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             element={
               <ProtectedRoute>
                 <BookingList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <ChangePassword />
               </ProtectedRoute>
             }
           />
@@ -151,6 +167,17 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           />
         </Route>
       </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </BrowserRouter>
   </AuthProvider>
 );

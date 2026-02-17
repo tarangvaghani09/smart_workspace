@@ -35,7 +35,7 @@ export default (sequelize) => {
 
       departmentId: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: false
       },
 
       isActive: {

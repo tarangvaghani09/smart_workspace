@@ -48,6 +48,7 @@ export default (sequelize) =>
 
     userId: { type: DataTypes.INTEGER, allowNull: false },
     departmentId: { type: DataTypes.INTEGER },
+    roomId: { type: DataTypes.INTEGER, allowNull: true },
 
     creditsUsed: { type: DataTypes.INTEGER, defaultValue: 0 },
 

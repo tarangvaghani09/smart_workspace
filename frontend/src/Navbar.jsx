@@ -1,16 +1,34 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
+import { toast } from 'react-toastify';
+import { FiLogOut } from 'react-icons/fi';
+import { RiLockPasswordLine } from 'react-icons/ri';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   const handleLogout = () => {
     logout();
+    toast.success('Logged out successfully');
     navigate('/');
   };
+
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, []);
 
 
   const navItems = [
@@ -60,8 +78,13 @@ export default function Navbar() {
       </nav>
 
       {/* USER CARD */}
-      <div className="p-4">
-        <div className="bg-gray-100 rounded-2xl p-4 flex items-center gap-3 mb-4">
+      <div className="p-4 relative" ref={profileRef}>
+        <button
+          type="button"
+          onClick={() => setProfileOpen((v) => !v)}
+          onMouseEnter={() => setProfileOpen(true)}
+          className="w-full bg-gray-100 rounded-2xl p-4 flex items-center gap-3 mb-2 cursor-pointer text-left"
+        >
           <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
             {user?.name?.charAt(0) || 'U'}
           </div>
@@ -73,15 +96,37 @@ export default function Navbar() {
               {user?.role || 'Member'}
             </p>
           </div>
-        </div>
-
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 text-red-500 font-semibold text-sm hover:bg-red-50 py-2 rounded-lg cursor-pointer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out w-4 h-4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
-          Sign Out
         </button>
+
+        {profileOpen && (
+          <div
+            onMouseLeave={() => setProfileOpen(false)}
+            className="absolute bottom-[88px] left-4 right-4 rounded-xl border border-gray-200 bg-white p-1 shadow-lg z-20"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setProfileOpen(false);
+                navigate('/change-password');
+              }}
+              className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer flex items-center gap-2"
+            >
+              <RiLockPasswordLine className="h-4 w-4" />
+              Change Password
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setProfileOpen(false);
+                handleLogout();
+              }}
+              className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50 cursor-pointer flex items-center gap-2"
+            >
+              <FiLogOut className="h-4 w-4" />
+              Sign Out
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

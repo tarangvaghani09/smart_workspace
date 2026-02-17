@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
+import { toast } from 'react-toastify';
+import AlertDialog from './components/AlertDialog';
 
 export default function RoomManagement() {
   const [rooms, setRooms] = useState([]);
@@ -17,8 +20,15 @@ export default function RoomManagement() {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
 
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    description: '',
+    confirmText: 'Confirm',
+    destructive: false,
+    onConfirm: null
+  });
 
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0]
@@ -44,10 +54,17 @@ export default function RoomManagement() {
   const maxDateString = maxDate.toISOString().split('T')[0];
 
   const fetchRooms = async () => {
+    const hasStart = Boolean(startTime);
+    const hasEnd = Boolean(endTime);
+
+    // While auto-end-time is being filled, do not call API or show error toast.
+    if (hasStart !== hasEnd) {
+      return;
+    }
+
     const payload = {
       date: selectedDate,
-      startTime,       // send in HH:mm 24-hour format
-      endTime,         // send in HH:mm 24-hour format
+      ...(hasStart && hasEnd ? { startTime, endTime } : {}),
       timezone: 'Asia/Kolkata',
       capacity: capacityFilter ? Number(capacityFilter) : undefined,
       type: typeFilter !== 'all' ? typeFilter : undefined,
@@ -67,16 +84,15 @@ export default function RoomManagement() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || 'Invalid time selection');
+        toast.error(data.error || 'Invalid time selection');
         setRooms([]);
         return;
       }
-      setError('');
       setRooms(Array.isArray(data) ? data : data.rooms || []);
       console.log('Fetched rooms:', data);
     } catch (err) {
       console.error('Error fetching rooms:', err);
-      setError('Something went wrong while searching rooms');
+      toast.error('Something went wrong while searching rooms');
       setRooms([]);
     }
   };
@@ -93,7 +109,6 @@ export default function RoomManagement() {
   };
 
   const saveEdit = async () => {
-    setError('');
     setLoading(true);
 
     try {
@@ -117,44 +132,92 @@ export default function RoomManagement() {
       if (!res.ok) throw new Error(data.error);
 
       setEditingRoom(null);
-      fetchRooms();
+      await fetchRooms();
+      toast.success('Room updated successfully');
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message || 'Failed to update room');
     } finally {
       setLoading(false);
     }
   };
 
   /* ================= TOGGLE ================= */
-  const toggleRoom = async room => {
-    if (!window.confirm(`${room.isActive ? 'Disable' : 'Enable'} this room?`)) return;
+  const closeConfirmDialog = () => {
+    setConfirmDialog(prev => ({ ...prev, open: false, onConfirm: null }));
+  };
 
-    await fetch(`https://localhost/api/rooms/${room.id}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({
-        isActive: !room.isActive
-      })
+  const runConfirmedAction = async () => {
+    const action = confirmDialog.onConfirm;
+    closeConfirmDialog();
+    if (action) {
+      await action();
+    }
+  };
+
+  const performToggleRoom = async room => {
+    try {
+      const res = await fetch(`https://localhost/api/rooms/${room.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          isActive: !room.isActive
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update room status');
+
+      await fetchRooms();
+      toast.success(room.isActive ? 'Room disabled' : 'Room enabled');
+    } catch (err) {
+      toast.error(err.message || 'Failed to update room status');
+    }
+  };
+
+  const toggleRoom = (room) => {
+    const actionText = room.isActive ? 'Disable' : 'Enable';
+    setConfirmDialog({
+      open: true,
+      title: `${actionText} this room?`,
+      description: `This will ${room.isActive ? 'hide' : 'show'} the room for users.`,
+      confirmText: actionText,
+      destructive: false,
+      onConfirm: () => performToggleRoom(room)
     });
-
-    fetchRooms();
   };
 
   /* ================= DELETE ================= */
-  const deleteRoom = async roomId => {
-    if (!window.confirm('Delete this room?')) return;
+  const performDeleteRoom = async roomId => {
+    try {
+      const res = await fetch(`https://localhost/api/rooms/${roomId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
 
-    await fetch(`https://localhost/api/rooms/${roomId}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to delete room');
+
+      await fetchRooms();
+      toast.success('Room deleted successfully');
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete room');
+    }
+  };
+
+  const deleteRoom = (roomId) => {
+    setConfirmDialog({
+      open: true,
+      title: 'Delete this room?',
+      description: 'This action cannot be undone.',
+      confirmText: 'Delete',
+      destructive: true,
+      onConfirm: () => performDeleteRoom(roomId)
     });
-
-    fetchRooms();
   };
 
   /* ================= SEARCH FILTER ================= */
@@ -201,6 +264,9 @@ export default function RoomManagement() {
 
   return (
     <AdminLayout>
+      <Helmet>
+        <title>Room Management</title>
+      </Helmet>
       <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300">
         <h2 className="text-xl font-bold mb-2">Room Management</h2>
         <p className="text-gray-500 mb-6">Manage rooms, pricing & capacity.</p>
@@ -279,12 +345,6 @@ export default function RoomManagement() {
           />
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 w-full flex items-center justify-center rounded-xl bg-white text-red-700 text-lg">
-            {error}
-          </div>
-        )}
-
         {/* ROOM CARDS */}
         <div className="space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -303,7 +363,7 @@ export default function RoomManagement() {
                     <rect width="100%" height="100%" fill="url(#grid)"></rect>
                   </svg>
                   <div className="bg-white/90 px-4 py-2 rounded-full text-sm font-semibold">
-                    {room.type === 'boardroom' ? 'Boardroom' : 'Standard Room'}
+                    {room.type === 'boardroom' ? 'Board Room' : 'Standard Room'}
                   </div>
                 </div>
 
@@ -374,7 +434,7 @@ export default function RoomManagement() {
                     <rect width="100%" height="100%" fill="url(#grid)"></rect>
                   </svg>
                   <div className="bg-white/90 px-4 py-2 rounded-full text-sm font-semibold">
-                    {room.type === 'boardroom' ? 'Boardroom' : 'Standard Room'}
+                    {room.type === 'boardroom' ? 'Board Room' : 'Standard Room'}
                   </div>
                 </div>
 
@@ -410,7 +470,7 @@ export default function RoomManagement() {
             ))}
           </div>
 
-          {!error && filteredRooms.length === 0 && (
+          {filteredRooms.length === 0 && (
             <p className="text-gray-500">No rooms found.</p>
           )}
         </div>
@@ -420,7 +480,6 @@ export default function RoomManagement() {
       {editingRoom && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 cursor-pointer" onMouseDown={handleModalOutsideClick}>
           <div ref={modalRef} className="bg-white w-[420px] rounded-2xl shadow-lg overflow-hidden cursor-default">
-            {error && <p className="text-red-600 mb-3">{error}</p>}
             <div className="bg-blue-600 p-5 text-white flex justify-between">
               <div>
                 <h2 className="font-bold text-lg">Edit Room</h2>
@@ -477,6 +536,15 @@ export default function RoomManagement() {
           </div>
         </div>
       )}
+      <AlertDialog
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        confirmText={confirmDialog.confirmText}
+        destructive={confirmDialog.destructive}
+        onCancel={closeConfirmDialog}
+        onConfirm={runConfirmedAction}
+      />
     </AdminLayout>
   );
 }

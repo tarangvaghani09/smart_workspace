@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
+import { toast } from 'react-toastify';
+
+function getApiErrorMessage(data, fallback) {
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    return data.errors
+      .map(item => item?.message || item?.field)
+      .filter(Boolean)
+      .join(' | ');
+  }
+
+  return data?.error || data?.message || fallback;
+}
 
 export default function AddRoom() {
   const [name, setName] = useState('');
   const [capacity, setCapacity] = useState('');
   const [type, setType] = useState('standard');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [creditsPerHour, setCreditsPerHour] = useState('');
 
   const handleSubmit = async () => {
-    setError('');
-    setSuccess('');
-
     if (!name || !capacity || !creditsPerHour) {
-      setError('Room name, capacity and price are required');
+      toast.error('Room name, capacity and price are required');
       return;
     }
 
@@ -39,16 +47,16 @@ export default function AddRoom() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to create room');
+        throw new Error(getApiErrorMessage(data, 'Failed to create room'));
       }
 
-      setSuccess('Room created successfully');
+      toast.success('Room created successfully');
       setName('');
       setCapacity('');
       setCreditsPerHour('');
       setType('standard');
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message || 'Failed to create room');
     } finally {
       setLoading(false);
     }
@@ -56,11 +64,11 @@ export default function AddRoom() {
 
   return (
     <AdminLayout>
+      <Helmet>
+        <title>Add Room</title>
+      </Helmet>
       <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300 max-w-xl">
         <h2 className="text-2xl font-bold mb-4">Add New Room</h2>
-
-        {error && <p className="text-red-600 mb-3">{error}</p>}
-        {success && <p className="text-green-600 mb-3">{success}</p>}
 
         <input
           className="border p-3 w-full mb-3 rounded-xl border-gray-300 text-gray-600 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"

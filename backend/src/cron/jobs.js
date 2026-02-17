@@ -1,6 +1,6 @@
 // cron/index.js
 import cron from 'node-cron';
-import { Booking, BookingRoom, Room, User, sequelize } from '../models/index.js';
+import { Booking, Room, User, sequelize } from '../models/index.js';
 import { Op } from 'sequelize';
 import {
   getOrCreateCredit,
@@ -9,6 +9,7 @@ import {
 } from '../services/creditService.js';
 import emailService from '../services/emailService.js';
 import { emailQueue } from '../queues/emailQueue.js';
+import { returnResourcesForBooking } from '../services/resourceReturnService.js';
 
 const GHOST_GRACE_MINUTES = Number(process.env.GHOST_GRACE_MINUTES || 15);
 
@@ -33,8 +34,7 @@ function startAll() {
         include: [
           {
             model: Room,
-            attributes: ['creditsPerHour'],
-            through: { attributes: [] }
+            attributes: ['creditsPerHour']
           },
           { model: User }
         ],
@@ -43,7 +43,7 @@ function startAll() {
       });
 
       for (const booking of ghostBookings) {
-        const room = booking.Rooms?.[0];
+        const room = booking.Room;
         if (!room || !booking.User) continue;
 
         const hours =
@@ -52,8 +52,14 @@ function startAll() {
 
         const creditsUsed = Math.ceil(hours * room.creditsPerHour);
 
+        // RETURN RESOURCES EVEN IF NOT CHECKED IN
+        if (!booking.checkedOut) {
+          await returnResourcesForBooking(booking.id, transaction);
+        }
+
         booking.status = 'NO_SHOW';
         booking.creditsUsed = creditsUsed;
+        booking.checkedOut = true;
 
         await booking.save({ transaction });
         await refundCredits(
@@ -134,6 +140,9 @@ function startAll() {
       });
 
       for (const booking of bookingsToCheckout) {
+        // RETURN INVENTORY
+        await returnResourcesForBooking(booking.id, transaction);
+
         booking.checkedOut = true;
         // booking.checkedOutAt = now;
         await booking.save({ transaction });

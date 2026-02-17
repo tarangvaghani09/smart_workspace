@@ -1,8 +1,9 @@
 // models/Department.js
 import { DataTypes } from 'sequelize';
+import { currentMonthYear } from '../services/creditService.js';
 
 export default (sequelize) => {
-  return sequelize.define(
+  const Department = sequelize.define(
     'Department',
     {
       id: {
@@ -37,7 +38,30 @@ export default (sequelize) => {
     },
     {
       tableName: 'departments',
-      timestamps: true,
+      timestamps: true
     }
   );
+
+  /* ----------------------------------
+     AFTER CREATE → create credit entry
+  ---------------------------------- */
+  Department.afterCreate(async (department, options) => {
+    const { DepartmentCredit } = sequelize.models;
+    const { month, year } = currentMonthYear();
+
+    await DepartmentCredit.findOrCreate({
+      where: {
+        departmentId: department.id,
+        month,
+        year
+      },
+      defaults: {
+        availableCredits: department.monthlyCreditQuota,
+        lockedCredits: 0
+      },
+      transaction: options.transaction
+    });
+  });
+
+  return Department;
 };

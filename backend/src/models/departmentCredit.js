@@ -28,7 +28,11 @@ export default (sequelize) => {
 
       availableCredits: {
         type: DataTypes.INTEGER,
-        defaultValue: 0
+        defaultValue: 0,
+        validate: {
+          min: 0,
+          max: 100
+        }
       },
 
       lockedCredits: {
