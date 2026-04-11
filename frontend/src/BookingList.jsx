@@ -35,7 +35,7 @@ export default function BookingList() {
   }, []);
 
   useEffect(() => {
-    fetch('https://localhost/api/bookings', {
+    fetch('http://localhost:3000/api/bookings', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -61,7 +61,7 @@ export default function BookingList() {
 
   const performCancelBooking = async (bookingId) => {
     const res = await fetch(
-      `https://localhost/api/bookings/${bookingId}/cancel`,
+      `http://localhost:3000/api/bookings/${bookingId}/cancel`,
       {
         method: 'POST',
         headers: {
@@ -101,7 +101,7 @@ export default function BookingList() {
 
   const performCheckInBooking = async (bookingId) => {
     const res = await fetch(
-      `https://localhost/api/bookings/${bookingId}/check-in`,
+      `http://localhost:3000/api/bookings/${bookingId}/check-in`,
       {
         method: 'POST',
         headers: {
@@ -140,7 +140,7 @@ export default function BookingList() {
 
   const performCheckOutBooking = async (bookingId) => {
     const res = await fetch(
-      `https://localhost/api/bookings/${bookingId}/check-out`,
+      `http://localhost:3000/api/bookings/${bookingId}/check-out`,
       {
         method: 'POST',
         headers: {

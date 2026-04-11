@@ -16,7 +16,7 @@ export default function Approvals() {
 
   /* ---------------- LOAD DEPARTMENTS ---------------- */
   useEffect(() => {
-    fetch('https://localhost/api/departments')
+    fetch('http://localhost:3000/api/departments')
       .then(res => res.json())
       .then(data => {
         setDepartments(data);
@@ -43,7 +43,7 @@ export default function Approvals() {
     try {
 
       const res = await fetch(
-        `https://localhost/api/approvals/pending?departmentId=${selectedDepartment}`,
+        `http://localhost:3000/api/approvals/pending?departmentId=${selectedDepartment}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -75,7 +75,7 @@ export default function Approvals() {
       setActionLoading(bookingId);
 
       const res = await fetch(
-        'https://localhost/api/approve-booking',
+        'http://localhost:3000/api/approve-booking',
         {
           method: 'POST',
           headers: {

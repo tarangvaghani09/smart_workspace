@@ -17,7 +17,7 @@ export default function ResetPassword() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('https://localhost/api/reset-password', {
+      const res = await fetch('http://localhost:3000/api/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

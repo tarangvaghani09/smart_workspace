@@ -14,7 +14,7 @@ export default function BookingForm() {
     };
 
     try {
-      const res = await fetch('https://localhost/api/bookings', {
+      const res = await fetch('http://localhost:3000/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)

@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    fetch('https://localhost/api/me', {
+    fetch('http://localhost:3000/api/me', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -24,7 +24,6 @@ export const AuthProvider = ({ children }) => {
       }
     })
       .then(res => {
-        // Rate limit nginx handle it
         if (res.status === 429) {
           const retry = res.headers.get("Retry-After") || 900;
           window.location.href = `/429.html?retry=${retry}`; // show 429.html

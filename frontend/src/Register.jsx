@@ -21,7 +21,7 @@ function Register() {
 
   //  DEPARTMENTS 
   useEffect(() => {
-    fetch('https://localhost/api/departments')
+    fetch('http://localhost:3000/api/departments')
       .then(res => res.json())
       .then(data => {
         console.log('Departments:', data)
@@ -50,7 +50,7 @@ function Register() {
         departmentId: form.departmentId ? Number(form.departmentId) : undefined
       };
 
-      const res = await fetch('https://localhost/api/register', {
+      const res = await fetch('http://localhost:3000/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

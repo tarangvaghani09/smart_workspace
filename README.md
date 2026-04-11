@@ -39,7 +39,6 @@ smart-workspace/
 |   |   |-- public/
 |   |   |   `-- 429.html
 |   |   |-- queues/
-|   |   |   |-- redis.js
 |   |   |   `-- emailQueue.js
 |   |   |-- routes/
 |   |   |   |-- admin.routes.js
@@ -59,8 +58,6 @@ smart-workspace/
 |   |   |   |-- resource.schema.js
 |   |   |   |-- room.schema.js
 |   |   |   `-- searchRoom.schema.js
-|   |   `-- workers/
-|   |       `-- emailWorker.js
 |   |-- tmp/                # ICS files (auto-created)
 |   |-- Dockerfile
 |   |-- package.json
@@ -106,11 +103,6 @@ smart-workspace/
 |   |-- index.html
 |   |-- package.json
 |   `-- package-lock.json
-|-- nginx/
-|   |-- conf/
-|   |-- docs/
-|   |-- html/
-|   `-- nginx.exe
 |-- docker-compose.yml
 |-- doc.js
 `-- README.md

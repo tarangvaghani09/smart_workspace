@@ -11,7 +11,7 @@ export default function Dashboard() {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetch('https://localhost/api/bookings', {
+    fetch('http://localhost:3000/api/bookings', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -19,7 +19,7 @@ export default function Dashboard() {
   }, [token]);
 
   useEffect(() => {
-    fetch('https://localhost/api/credits', {
+    fetch('http://localhost:3000/api/credits', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())

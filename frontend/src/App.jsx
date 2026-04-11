@@ -20,7 +20,7 @@ function App() {
         const endUTC = new Date(`${date}T${endTime}:00+05:30`).toISOString();
 
         try {
-            const res = await fetch('https://localhost/api/bookings', {
+            const res = await fetch('http://localhost:3000/api/bookings', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

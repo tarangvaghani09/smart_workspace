@@ -30,7 +30,7 @@ export default function AddResource() {
     setLoading(true);
 
     try {
-      const res = await fetch('https://localhost/api/resources', {
+      const res = await fetch('http://localhost:3000/api/resources', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

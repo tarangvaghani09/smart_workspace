@@ -48,7 +48,7 @@ export default function ResourceManagement() {
   }, [search, minQty, maxQty, minCredits, maxCredits, resources]);
 
   const fetchResources = async () => {
-    const res = await fetch('https://localhost/api/listAllResources', {
+    const res = await fetch('http://localhost:3000/api/listAllResources', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -104,7 +104,7 @@ export default function ResourceManagement() {
 
     try {
       const res = await fetch(
-        `https://localhost/api/resources/${editingResource.id}`,
+        `http://localhost:3000/api/resources/${editingResource.id}`,
         {
           method: 'PATCH',
           headers: {
@@ -148,7 +148,7 @@ export default function ResourceManagement() {
 
   const performToggleResource = async resource => {
     try {
-      const res = await fetch(`https://localhost/api/resources/${resource.id}/status`, {
+      const res = await fetch(`http://localhost:3000/api/resources/${resource.id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +184,7 @@ export default function ResourceManagement() {
   /* ================= DELETE ================= */
   const performDeleteResource = async id => {
     try {
-      const res = await fetch(`https://localhost/api/resources/${id}`, {
+      const res = await fetch(`http://localhost:3000/api/resources/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`

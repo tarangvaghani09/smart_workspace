@@ -137,7 +137,7 @@ export default function SearchRooms() {
     };
 
     try {
-      const res = await fetch('https://localhost/api/search/rooms', {
+      const res = await fetch('http://localhost:3000/api/search/rooms', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

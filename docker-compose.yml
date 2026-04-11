@@ -16,18 +16,8 @@ services:
     build: ./frontend
     image: my-frontend:latest
     container_name: frontend
-
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
     ports:
-      - "80:80"
-    volumes:
-      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf/ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - backend
-      - frontend
+      - "5173:5173"
 
   db:   # <-- this is your MySQL service
     image: mysql:8

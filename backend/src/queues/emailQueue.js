@@ -1,15 +1,60 @@
-import { Queue } from 'bullmq';
-import connection from './redis.js';
+import emailService from '../services/emailService.js';
 
-export const emailQueue = new Queue('email-queue', {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,          // retry 3 times
-    backoff: {
-      type: 'exponential',
-      delay: 5000         // retry after 5s
-    },
-    removeOnComplete: true,
-    removeOnFail: false
+const DEFAULT_ATTEMPTS = 3;
+const DEFAULT_BACKOFF_MS = 5000;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const handlers = {
+  'booking-confirmed': async (payload) => {
+    await emailService.sendBookingConfirmationEmail(payload?.bookingId);
+  },
+  'booking-rejected': async (payload) => {
+    await emailService.sendBookingRejectedEmail(payload?.bookingId);
+  },
+  'booking-no-show': async (payload) => {
+    await emailService.sendNoShowNotificationEmail(payload?.bookingId);
+  },
+  'password-reset': async (payload) => {
+    await emailService.sendPasswordResetEmail(payload || {});
   }
-});
+};
+
+const runWithRetry = async (jobName, payload) => {
+  const handler = handlers[jobName];
+  if (!handler) {
+    throw new Error(`Unknown email job: ${jobName}`);
+  }
+
+  let lastError = null;
+  for (let attempt = 1; attempt <= DEFAULT_ATTEMPTS; attempt += 1) {
+    try {
+      await handler(payload);
+      return;
+    } catch (err) {
+      lastError = err;
+      console.error(
+        `Email job failed (${jobName}) attempt ${attempt}/${DEFAULT_ATTEMPTS}:`,
+        err?.message || err
+      );
+
+      if (attempt < DEFAULT_ATTEMPTS) {
+        await sleep(DEFAULT_BACKOFF_MS);
+      }
+    }
+  }
+
+  throw lastError;
+};
+
+export const emailQueue = {
+  add: async (jobName, payload) => {
+    setImmediate(() => {
+      runWithRetry(jobName, payload).catch((err) => {
+        console.error(`Email job permanently failed (${jobName}):`, err?.message || err);
+      });
+    });
+
+    return { name: jobName };
+  }
+};

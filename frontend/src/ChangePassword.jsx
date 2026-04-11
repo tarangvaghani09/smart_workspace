@@ -19,7 +19,7 @@ export default function ChangePassword() {
     setLoading(true);
 
     try {
-      const res = await fetch('https://localhost/api/change-password', {
+      const res = await fetch('http://localhost:3000/api/change-password', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
