@@ -217,8 +217,8 @@ export default function ResourceManagement() {
       <Helmet>
         <title>Resource Management</title>
       </Helmet>
-      <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300">
-        <div className="flex items-start justify-between mb-6">
+      <div className="bg-white p-4 sm:p-6 lg:p-10 rounded-2xl shadow-sm border border-gray-300">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div>
             <h2 className="text-xl font-bold">Resource Management</h2>
             <p className="text-gray-500">
@@ -228,7 +228,7 @@ export default function ResourceManagement() {
 
           <Link
             to="/admin/resources/new"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 whitespace-nowrap"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 whitespace-nowrap self-start sm:self-auto w-full sm:w-auto text-center"
           >
             + Add New Resource
           </Link>
@@ -310,24 +310,24 @@ export default function ResourceManagement() {
                     {resource.isMovable ? 'Movable' : 'Fixed'}
                   </p>
 
-                  <div className="flex gap-4 mt-6">
+                  <div className="flex flex-wrap gap-2 sm:gap-4 mt-6">
                     <button
                       onClick={() => startEdit(resource)}
-                      className="flex-1 bg-indigo-50 text-indigo-700 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-indigo-600 hover:text-white hover:shadow-lg hover:shadow-indigo-200 active:scale-95 cursor-pointer"
+                      className="flex-1 min-w-[110px] bg-indigo-50 text-indigo-700 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-indigo-600 hover:text-white hover:shadow-lg hover:shadow-indigo-200 active:scale-95 cursor-pointer"
                     >
                       Edit
                     </button>
 
                     <button
                       onClick={() => toggleResource(resource)}
-                      className="flex-1 bg-amber-50 text-amber-600 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-amber-600 hover:text-white hover:shadow-lg hover:shadow-amber-200 active:scale-95 cursor-pointer"
+                      className="flex-1 min-w-[110px] bg-amber-50 text-amber-600 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-amber-600 hover:text-white hover:shadow-lg hover:shadow-amber-200 active:scale-95 cursor-pointer"
                     >
                       Disable
                     </button>
 
                     <button
                       onClick={() => deleteResource(resource.id)}
-                      className="flex-1 bg-red-50 text-red-600 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-red-600 hover:text-white hover:shadow-lg hover:shadow-red-200 active:scale-95 cursor-pointer"
+                      className="flex-1 min-w-[110px] bg-red-50 text-red-600 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-red-600 hover:text-white hover:shadow-lg hover:shadow-red-200 active:scale-95 cursor-pointer"
                     >
                       Delete
                     </button>
@@ -375,16 +375,16 @@ export default function ResourceManagement() {
                     {resource.isMovable ? 'Movable' : 'Fixed'}
                   </p>
 
-                  <div className="flex gap-4 mt-6">
+                  <div className="flex flex-wrap gap-2 sm:gap-4 mt-6">
                     <button
                       onClick={() => toggleResource(resource)}
-                      className="flex-1 bg-green-100 text-green-700 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-green-600 hover:text-white hover:shadow-lg hover:shadow-green-200 active:scale-95 cursor-pointer"
+                      className="flex-1 min-w-[110px] bg-green-100 text-green-700 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-green-600 hover:text-white hover:shadow-lg hover:shadow-green-200 active:scale-95 cursor-pointer"
                     >
                       Enable
                     </button>
                     <button
                       onClick={() => deleteResource(resource.id)}
-                      className="flex-1 bg-red-50 text-red-600 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-red-600 hover:text-white hover:shadow-lg hover:shadow-red-200 active:scale-95 cursor-pointer"
+                      className="flex-1 min-w-[110px] bg-red-50 text-red-600 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-red-600 hover:text-white hover:shadow-lg hover:shadow-red-200 active:scale-95 cursor-pointer"
                     >
                       Delete
                     </button>

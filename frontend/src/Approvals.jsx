@@ -114,10 +114,10 @@ export default function Approvals() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-300">
 
         {/* HEADER */}
-        <div className="px-6 py-4 border-b border-gray-300 flex justify-between items-center">
+        <div className="px-6 py-4 border-b border-gray-300 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
 
           <div>
-            <p className='text-md font-semibold'> ⏳ Pending Requests ({pendingBookings.length}) </p>
+            <p className="text-md font-semibold"> Pending Requests ({pendingBookings.length}) </p>
             <p className="text-sm text-gray-400 font-normal pt-2">
               {selectedDept ? selectedDept?.name : 'Loading...'} department
             </p>
@@ -127,7 +127,7 @@ export default function Approvals() {
           <select
             value={selectedDepartment}
             onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer"
+            className="border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer w-full sm:w-auto"
           >
             {departments?.map(d => (
               <option key={d.id} value={d.id}>

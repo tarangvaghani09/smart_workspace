@@ -84,18 +84,18 @@ export default function Dashboard() {
       <Helmet>
         <title>Dashboard</title>
       </Helmet>
-      <header className="flex justify-between items-start mb-8">
+      <header className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start mb-8">
         <div>
-          <h1 className="text-4xl font-display font-bold text-slate-900">
+          <h1 className="text-3xl sm:text-4xl font-display font-bold text-slate-900">
             Welcome back, <span className="capitalize">{user?.name || 'User'}</span>
           </h1>
-          <p className="text-muted-foreground mt-2 text-lg text-slate-500">
+          <p className="text-muted-foreground mt-2 text-base sm:text-lg text-slate-500">
             Here's what's happening in your workspace today.
           </p>
         </div>
         <Link
           to="/search"
-          className="bg-indigo-700 hover:bg-indigo-800 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2"
+          className="bg-indigo-700 hover:bg-indigo-800 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <span className="text-xl">+</span>
           New Booking
@@ -140,11 +140,11 @@ export default function Dashboard() {
       </div>
 
       {/* Featured "Up Next" Gradient Card */}
-      <div className="mb-10 relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-2xl shadow-slate-900/20 p-8 md:p-10">
+      <div className="mb-10 relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-2xl shadow-slate-900/20 p-6 sm:p-8 md:p-10">
         <div className="relative z-10">
 
           {/* HEADER */}
-          <div className="flex justify-between items-center mb-10">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 sm:mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-sm font-medium backdrop-blur-md border border-white/10">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="green" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -153,9 +153,9 @@ export default function Dashboard() {
               <span>Up Next</span>
             </div>
 
-            <div className="text-right">
-              <p className="flex flex-col gap-3 min-w-[200px] text-slate-400">Status</p>
-              <p className="font-bold uppercase tracking-wide text-yellow-400">
+            <div className="sm:text-right">
+              <p className="text-slate-400 text-xs sm:text-sm">Status</p>
+              <p className="font-bold uppercase tracking-wide text-yellow-400 text-sm sm:text-base">
                 {upNext ? upNext.status : 'No Upcoming Bookings'}
               </p>
             </div>
@@ -177,9 +177,8 @@ export default function Dashboard() {
                 })}
               </h2>
 
-              <p className="mt-5 ml-[-15px] flex items-center gap-2 text-sm text-slate-300">
-                <span className="w-2 h-2 rounded-full bg-accent"></span>
-                <div className="w-2 h-2 rounded-full bg-green-600"></div>
+              <p className="mt-5 flex items-center gap-2 text-sm text-slate-300">
+                <span className="w-2 h-2 rounded-full bg-green-600"></span>
                 {getUpNextLabel(upNext)}
               </p>
             </>

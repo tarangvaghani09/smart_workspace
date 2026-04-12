@@ -75,10 +75,10 @@ export default function DepartmentBookingList() {
       <Helmet>
         <title>Department Bookings</title>
       </Helmet>
-      <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300">
+      <div className="bg-white p-4 sm:p-6 lg:p-10 rounded-2xl shadow-sm border border-gray-300">
 
         {/* HEADER */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div>
             <h2 className="text-xl font-bold mb-2">
               Department Bookings
@@ -88,9 +88,9 @@ export default function DepartmentBookingList() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
 
-            <select value={status} onChange={e => setStatus(e.target.value)} className='border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer' >
+            <select value={status} onChange={e => setStatus(e.target.value)} className="border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer w-full sm:w-auto" >
               <option value="">All Status</option>
               {statuses.map(s => (
                 <option key={s} value={s}>{s}</option>
@@ -100,7 +100,7 @@ export default function DepartmentBookingList() {
             <select
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
-              className="border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer"
+              className="border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer w-full sm:w-auto"
             >
               {/* <option value="">Select Department</option> */}
               {departments?.map(d => (

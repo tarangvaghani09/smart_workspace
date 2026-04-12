@@ -17,14 +17,14 @@ export default function AdminLayout({ children }) {
   return (
     <>
       {/* <Navbar /> */}
-      
+
       {/* HEADER */}
-      <div className="flex justify-between items-start mb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Admin Control Center
           </h1>
-          <p className="text-gray-500">
+          <p className="text-sm sm:text-base text-gray-500">
             Manage workspace resources and team permissions.
           </p>
         </div>
@@ -32,17 +32,17 @@ export default function AdminLayout({ children }) {
       </div>
 
       {/* TABS */}
-      <div className="flex gap-2 mb-6">
-        <Link to="/admin/approvals" className={tabClass('/admin/approvals')}>
+      <div className="flex sm:flex-nowrap gap-2 mb-6 overflow-x-auto -mx-4 px-4 pb-2 whitespace-nowrap">
+        <Link to="/admin/approvals" className={`${tabClass('/admin/approvals')} shrink-0`}>
           Booking Approvals
         </Link>
-        <Link to="/admin/bookings/department" className={tabClass('/admin/bookings/department')}>
+        <Link to="/admin/bookings/department" className={`${tabClass('/admin/bookings/department')} shrink-0`}>
           Department Bookings
         </Link>
-        <Link to="/admin/rooms" className={tabClass('/admin/rooms')}>
+        <Link to="/admin/rooms" className={`${tabClass('/admin/rooms')} shrink-0`}>
           Room Management
         </Link>
-        <Link to="/admin/resources" className={tabClass('/admin/resources')}>
+        <Link to="/admin/resources" className={`${tabClass('/admin/resources')} shrink-0`}>
           Resource Management
         </Link>
         {/* <Link to="/admin/requests" className={tabClass('/admin/requests')}>

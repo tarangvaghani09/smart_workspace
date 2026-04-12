@@ -193,9 +193,9 @@ export default function SearchRooms() {
         <title>Search Rooms</title>
       </Helmet>
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
         <div>
-          <h1 className="text-3xl font-display font-bold text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-slate-900">
             Search Rooms
           </h1>
           <p className="text-muted-foreground mt-1 text-slate-400">
@@ -209,13 +209,13 @@ export default function SearchRooms() {
           placeholder="Search rooms..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border rounded-xl border-gray-300 text-gray-600 px-4 py-2 w-72 shadow-sm focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
+          className="border rounded-xl border-gray-300 text-gray-600 px-4 py-2 w-full sm:w-72 shadow-sm focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
         />
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
         {/* LEFT FILTER SIDEBAR */}
-        <aside className="w-64 bg-white rounded-2xl shadow p-5 h-fit sticky top-6">
+        <aside className="w-full lg:w-64 bg-white rounded-2xl shadow p-5 h-fit lg:sticky lg:top-6">
           <h3 className="font-bold mb-4 text-gray-600">Filters</h3>
 
           {/* DATE */}
@@ -312,7 +312,7 @@ export default function SearchRooms() {
         )}
 
         {/* ROOM CARDS */}
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
           {filteredRooms?.map(room => (
             <div
               key={room.id}

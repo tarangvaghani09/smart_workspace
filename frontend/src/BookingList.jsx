@@ -202,9 +202,9 @@ export default function BookingList() {
         <title>My Bookings</title>
       </Helmet>
       {filteredBookings && (
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-3xl font-display font-bold text-slate-900">
+            <p className="text-2xl sm:text-3xl font-display font-bold text-slate-900">
               Room Bookings
             </p>
             <p className="mt-1 text-slate-400">
@@ -212,7 +212,7 @@ export default function BookingList() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
             <label className="text-sm font-semibold text-gray-600">
               Filter by Month:
             </label>
@@ -220,7 +220,7 @@ export default function BookingList() {
             <select
               value={selectedMonth}
               onChange={e => setSelectedMonth(e.target.value === '' ? null : Number(e.target.value))}
-              className="border p-2 rounded-xl text-gray-600 border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none cursor-pointer transition"
+              className="border p-2 rounded-xl text-gray-600 border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none cursor-pointer transition w-full sm:w-auto"
             >
               <option value="">All Months</option>
               {Array.from({ length: 12 }).map((_, i) => (
@@ -237,24 +237,24 @@ export default function BookingList() {
           {filteredBookings?.map(b => (
             <div
               key={b.id}
-              className="group border border-gray-100 rounded-2xl p-5 flex items-center gap-6 hover:shadow-lg hover:border-indigo-100 transition-all duration-300"
+              className="group border border-gray-100 rounded-2xl p-4 sm:p-5 flex items-center gap-4 sm:gap-6 hover:shadow-lg hover:border-indigo-100 transition-all duration-300"
             >
-              <div className="bg-gray-50 rounded-xl px-5 py-3 text-center border border-gray-100 min-w-[90px] group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors">
-                <p className="text-[10px] uppercase font-black text-gray-400 tracking-tighter group-hover:text-indigo-400">
+              <div className="bg-gray-50 rounded-xl px-4 py-2 text-center border border-gray-100 min-w-[72px] sm:min-w-[90px] group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors">
+                <p className="text-[9px] sm:text-[10px] uppercase font-black text-gray-400 tracking-tighter group-hover:text-indigo-400">
                   {new Date(b.startTime).toLocaleString('default', { month: 'short' })}
                 </p>
-                <p className="text-2xl font-black text-gray-800 group-hover:text-indigo-700">
+                <p className="text-xl sm:text-2xl font-black text-gray-800 group-hover:text-indigo-700">
                   {new Date(b.startTime).getDate()}
                 </p>
               </div>
 
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="font-bold text-gray-800 text-lg leading-tight">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                  <h3 className="font-bold text-gray-800 text-base sm:text-lg leading-tight truncate max-w-[140px] sm:max-w-none">
                     {b.title}
                   </h3>
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${b.status === 'CONFIRMED'
+                    className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${b.status === 'CONFIRMED'
                       ? 'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border bg-green-500/10 text-green-600 border-green-500/20'
                       : b.status === 'NO_SHOW' || b.status === 'REJECTED'
                         ? 'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-500/10 text-red-600 border border-red-500/20'
@@ -280,7 +280,7 @@ export default function BookingList() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-4 text-xs font-bold text-gray-500 flex-wrap">
+                <div className="flex items-center gap-2 sm:gap-4 text-[11px] sm:text-xs font-bold text-gray-500 flex-wrap">
                   <span>
                     {new Date(b.startTime).toLocaleTimeString([], {
                       hour: '2-digit',
@@ -337,7 +337,7 @@ export default function BookingList() {
                     onClick={() =>
                       setOpenMenuId(openMenuId === b.id ? null : b.id)
                     }
-                    className="text-gray-400 hover:text-gray-700"
+                    className="text-gray-400 hover:text-gray-700 inline-flex"
                   >
                     <span className="text-xl cursor-pointer">⋮</span>
                   </button>

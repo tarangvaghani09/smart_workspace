@@ -199,22 +199,22 @@ export default function BookingListHomePage() {
               key={b.id}
               className="group border border-gray-100 rounded-2xl p-5 flex items-center gap-6 hover:shadow-lg hover:border-indigo-100 transition-all duration-300"
             >
-              <div className="bg-gray-50 rounded-xl px-5 py-3 text-center border border-gray-100 min-w-[90px] group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors">
-                <p className="text-[10px] uppercase font-black text-gray-400 tracking-tighter group-hover:text-indigo-400">
+              <div className="bg-gray-50 rounded-xl px-4 py-2 text-center border border-gray-100 min-w-[72px] sm:min-w-[90px] group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors">
+                <p className="text-[9px] sm:text-[10px] uppercase font-black text-gray-400 tracking-tighter group-hover:text-indigo-400">
                   {new Date(b.startTime).toLocaleString('default', { month: 'short' })}
                 </p>
-                <p className="text-2xl font-black text-gray-800 group-hover:text-indigo-700">
+                <p className="text-xl sm:text-2xl font-black text-gray-800 group-hover:text-indigo-700">
                   {new Date(b.startTime).getDate()}
                 </p>
               </div>
 
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="font-bold text-gray-800 text-lg leading-tight">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                  <h3 className="font-bold text-gray-800 text-base sm:text-lg leading-tight truncate max-w-[140px] sm:max-w-none">
                     {b.title}
                   </h3>
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${b.status === 'CONFIRMED'
+                    className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${b.status === 'CONFIRMED'
                       ? 'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border bg-green-500/10 text-green-600 border-green-500/20'
                       : b.status === 'NO_SHOW' || b.status === 'REJECTED'
                         ? 'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-500/10 text-red-600 border border-red-500/20'
@@ -240,7 +240,7 @@ export default function BookingListHomePage() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-4 text-xs font-bold text-gray-500 flex-wrap">
+                <div className="flex items-center gap-2 sm:gap-4 text-[11px] sm:text-xs font-bold text-gray-500 flex-wrap">
                   <span>
                     {new Date(b.startTime).toLocaleTimeString([], {
                       hour: '2-digit',
@@ -297,7 +297,7 @@ export default function BookingListHomePage() {
                     onClick={() =>
                       setOpenMenuId(openMenuId === b.id ? null : b.id)
                     }
-                    className="text-gray-400 hover:text-gray-700"
+                    className="text-gray-400 hover:text-gray-700 inline-flex"
                   >
                     <BsThreeDotsVertical className="text-lg cursor-pointer" />
                   </button>

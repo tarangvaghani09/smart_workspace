@@ -268,7 +268,7 @@ export default function RoomManagement() {
       <Helmet>
         <title>Room Management</title>
       </Helmet>
-      <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300">
+      <div className="bg-white p-4 sm:p-6 lg:p-10 rounded-2xl shadow-sm border border-gray-300">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold mb-2">Room Management</h2>
@@ -276,7 +276,7 @@ export default function RoomManagement() {
         </div>
         <Link
           to="/admin/rooms/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 self-start sm:self-auto"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 self-start sm:self-auto w-full sm:w-auto text-center"
         >
           + Add New Room
         </Link>
@@ -390,24 +390,24 @@ export default function RoomManagement() {
                     Capacity: {room.capacity}
                   </p>
 
-                  <div className="flex gap-4 mt-6">
+                  <div className="flex flex-wrap gap-2 sm:gap-4 mt-6">
                     <button
                       onClick={() => startEdit(room)}
-                      className="group flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-700 font-medium rounded-xl transition-all duration-200 hover:bg-indigo-600 hover:text-white hover:shadow-lg hover:shadow-indigo-200 active:scale-95 cursor-pointer"
+                      className="group flex flex-1 min-w-[110px] items-center justify-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-700 font-medium rounded-xl transition-all duration-200 hover:bg-indigo-600 hover:text-white hover:shadow-lg hover:shadow-indigo-200 active:scale-95 cursor-pointer"
                     >
                       Edit
                     </button>
 
                     <button
                       onClick={() => toggleRoom(room)}
-                      className="flex-1 bg-amber-50 text-amber-600 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-amber-600 hover:text-white hover:shadow-lg hover:shadow-amber-200 active:scale-95 cursor-pointer"
+                      className="flex-1 min-w-[110px] bg-amber-50 text-amber-600 px-4 py-2 font-medium rounded-xl transition-all duration-200 hover:bg-amber-600 hover:text-white hover:shadow-lg hover:shadow-amber-200 active:scale-95 cursor-pointer"
                     >
                       Disable
                     </button>
 
                     <button
                       onClick={() => deleteRoom(room.id)}
-                      className="group flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 font-medium rounded-xl transition-all duration-200 hover:bg-rose-600 hover:text-white hover:shadow-lg hover:shadow-rose-200 active:scale-95 cursor-pointer"
+                      className="group flex flex-1 min-w-[110px] items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 font-medium rounded-xl transition-all duration-200 hover:bg-rose-600 hover:text-white hover:shadow-lg hover:shadow-rose-200 active:scale-95 cursor-pointer"
                     >
                       Delete
                     </button>
@@ -461,17 +461,17 @@ export default function RoomManagement() {
                     Capacity: {room.capacity}
                   </p>
 
-                  <div className="flex gap-4 mt-6">
+                  <div className="flex flex-wrap gap-2 sm:gap-4 mt-6">
                     <button
                       onClick={() => toggleRoom(room)}
-                      className="group flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-green-100 text-green-700 font-medium rounded-xl transition-all duration-200 hover:bg-green-600 hover:text-white hover:shadow-lg hover:shadow-green-200 active:scale-95 cursor-pointer"
+                      className="group flex flex-1 min-w-[110px] items-center justify-center gap-2 px-4 py-2.5 bg-green-100 text-green-700 font-medium rounded-xl transition-all duration-200 hover:bg-green-600 hover:text-white hover:shadow-lg hover:shadow-green-200 active:scale-95 cursor-pointer"
                     >
                       Enable
                     </button>
 
                     <button
                       onClick={() => deleteRoom(room.id)}
-                      className="group flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 font-medium rounded-xl transition-all duration-200 hover:bg-rose-600 hover:text-white hover:shadow-lg hover:shadow-rose-200 active:scale-95 cursor-pointer"
+                      className="group flex flex-1 min-w-[110px] items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 font-medium rounded-xl transition-all duration-200 hover:bg-rose-600 hover:text-white hover:shadow-lg hover:shadow-rose-200 active:scale-95 cursor-pointer"
                     >
                       Delete
                     </button>
