@@ -156,7 +156,7 @@ export default function Approvals() {
           {pendingBookings?.map(b => (
             <div
               key={b.id}
-              className="px-6 py-6 flex justify-between items-center bg-white rounded-2xl shadow-sm border border-gray-300 m-5"
+              className="px-4 sm:px-6 py-5 sm:py-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-white rounded-2xl shadow-sm border border-gray-300 m-4 sm:m-5"
             >
               <div>
                 <h3 className="font-semibold">{b.title}</h3>
@@ -203,11 +203,11 @@ export default function Approvals() {
                 </p>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3 sm:justify-end">
                 <button
                   disabled={actionLoading === b.id}
                   onClick={() => handleDecision(b.id, 'REJECT')}
-                  className="px-4 py-2 border border-red-500 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2 border border-red-500 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50 cursor-pointer w-full sm:w-auto"
                 >
                   Reject
                 </button>
@@ -215,7 +215,7 @@ export default function Approvals() {
                 <button
                   disabled={actionLoading === b.id}
                   onClick={() => handleDecision(b.id, 'APPROVE')}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer w-full sm:w-auto"
                 >
                   Approve
                 </button>
