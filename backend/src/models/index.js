@@ -12,7 +12,9 @@ const sslOptions = sslRequired
         ? {
             ca: process.env.DB_SSL_CA
           }
-        : true
+        : {
+            rejectUnauthorized: true
+          }
     }
   : {};
 
