@@ -1,7 +1,10 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 
-const getClientIp = (req) => req.ip || req.socket?.remoteAddress || 'unknown-ip';
+const getClientIp = (req) => {
+  const rawIp = req.ip || req.socket?.remoteAddress || '';
+  return rawIp ? ipKeyGenerator(rawIp) : 'unknown-ip';
+};
 
 const getUserIdFromRequest = (req) => {
   if (req.user?.id) return String(req.user.id);
