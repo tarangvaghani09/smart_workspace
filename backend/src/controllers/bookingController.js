@@ -34,7 +34,7 @@ const attachAggregatedResources = async (bookings) => {
         r.name AS resourceName,
         SUM(br.quantity) AS quantity
       FROM booking_resources br
-      INNER JOIN resource r ON r.id = br.resourceId
+      INNER JOIN Resource r ON r.id = br.resourceId
       WHERE br.bookingId IN (:bookingIds)
       GROUP BY br.bookingId, br.resourceId, r.name
     `,
