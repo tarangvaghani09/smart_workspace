@@ -6,14 +6,22 @@ const sslRequired =
   String(process.env.DB_SSL || '').toLowerCase() === 'true' ||
   String(process.env.DB_SSL_MODE || '').toUpperCase() === 'REQUIRED';
 
+const rejectUnauthorizedEnv = String(process.env.DB_SSL_REJECT_UNAUTHORIZED || '')
+  .toLowerCase();
+const rejectUnauthorized =
+  rejectUnauthorizedEnv === ''
+    ? true
+    : rejectUnauthorizedEnv !== 'false';
+
 const sslOptions = sslRequired
   ? {
       ssl: process.env.DB_SSL_CA
         ? {
-            ca: process.env.DB_SSL_CA
+            ca: process.env.DB_SSL_CA,
+            rejectUnauthorized
           }
         : {
-            rejectUnauthorized: true
+            rejectUnauthorized
           }
     }
   : {};
