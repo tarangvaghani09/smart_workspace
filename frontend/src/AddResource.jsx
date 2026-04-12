@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 function getApiErrorMessage(data, fallback) {
   if (Array.isArray(data?.errors) && data.errors.length > 0) {
@@ -20,6 +21,7 @@ export default function AddResource() {
   const [loading, setLoading] = useState(false);
   const [creditsPerHour, setCreditsPerHour] = useState('');
   const [isMovable, setIsMovable] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     if (!name || !quantity || !creditsPerHour || isMovable === '') {
@@ -51,10 +53,7 @@ export default function AddResource() {
       }
 
       toast.success('Resource created successfully');
-      setName('');
-      setQuantity('');
-      setCreditsPerHour('');
-      setIsMovable('');
+      navigate('/admin/resources');
     } catch (err) {
       toast.error(err.message || 'Failed to create resource');
     } finally {

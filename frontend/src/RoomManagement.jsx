@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
 import { toast } from 'react-toastify';
 import AlertDialog from './components/AlertDialog';
+import { Link } from 'react-router-dom';
 
 export default function RoomManagement() {
   const [rooms, setRooms] = useState([]);
@@ -268,8 +269,18 @@ export default function RoomManagement() {
         <title>Room Management</title>
       </Helmet>
       <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-300">
-        <h2 className="text-xl font-bold mb-2">Room Management</h2>
-        <p className="text-gray-500 mb-6">Manage rooms, pricing & capacity.</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-bold mb-2">Room Management</h2>
+          <p className="text-gray-500">Manage rooms, pricing & capacity.</p>
+        </div>
+        <Link
+          to="/admin/rooms/new"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 self-start sm:self-auto"
+        >
+          + Add New Room
+        </Link>
+      </div>
 
         {/* FILTER BAR */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-8">

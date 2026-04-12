@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 function getApiErrorMessage(data, fallback) {
   if (Array.isArray(data?.errors) && data.errors.length > 0) {
@@ -20,6 +21,7 @@ export default function AddRoom() {
   const [type, setType] = useState('standard');
   const [loading, setLoading] = useState(false);
   const [creditsPerHour, setCreditsPerHour] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     if (!name || !capacity || !creditsPerHour) {
@@ -51,10 +53,7 @@ export default function AddRoom() {
       }
 
       toast.success('Room created successfully');
-      setName('');
-      setCapacity('');
-      setCreditsPerHour('');
-      setType('standard');
+      navigate('/admin/rooms');
     } catch (err) {
       toast.error(err.message || 'Failed to create room');
     } finally {
