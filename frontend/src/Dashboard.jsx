@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import BookingListHomePage from './BookingListHomePage';
+import { apiUrl } from './api';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -11,7 +12,7 @@ export default function Dashboard() {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/bookings', {
+    fetch(apiUrl('/api/bookings'), {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -19,7 +20,7 @@ export default function Dashboard() {
   }, [token]);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/credits', {
+    fetch(apiUrl('/api/credits'), {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())

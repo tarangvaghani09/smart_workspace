@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import BookRoom from './BookRoom';
 import moment from 'moment-timezone';
+import { apiUrl } from './api';
 
 export default function SearchRooms() {
   const [rooms, setRooms] = useState([]);
@@ -137,7 +138,7 @@ export default function SearchRooms() {
     };
 
     try {
-      const res = await fetch('http://localhost:3000/api/search/rooms', {
+      const res = await fetch(apiUrl('/api/search/rooms'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

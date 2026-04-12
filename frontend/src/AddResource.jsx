@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { apiUrl } from './api';
 
 function getApiErrorMessage(data, fallback) {
   if (Array.isArray(data?.errors) && data.errors.length > 0) {
@@ -32,7 +33,7 @@ export default function AddResource() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:3000/api/resources', {
+      const res = await fetch(apiUrl('/api/resources'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import AlertDialog from './components/AlertDialog';
 import { BsThreeDotsVertical } from 'react-icons/bs';
+import { apiUrl } from './api';
 
 export default function BookingListHomePage() {
   const [bookings, setBookings] = useState([]);
@@ -35,7 +36,7 @@ export default function BookingListHomePage() {
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/bookings', {
+    fetch(apiUrl('/api/bookings'), {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -60,8 +61,7 @@ export default function BookingListHomePage() {
   };
 
   const performCancelBooking = async (bookingId) => {
-    const res = await fetch(
-      `http://localhost:3000/api/bookings/${bookingId}/cancel`,
+    const res = await fetch(apiUrl(`/api/bookings/${bookingId}/cancel`),
       {
         method: 'POST',
         headers: {
@@ -100,8 +100,7 @@ export default function BookingListHomePage() {
   };
 
   const performCheckInBooking = async (bookingId) => {
-    const res = await fetch(
-      `http://localhost:3000/api/bookings/${bookingId}/check-in`,
+    const res = await fetch(apiUrl(`/api/bookings/${bookingId}/check-in`),
       {
         method: 'POST',
         headers: {
@@ -139,8 +138,7 @@ export default function BookingListHomePage() {
   };
 
   const performCheckOutBooking = async (bookingId) => {
-    const res = await fetch(
-      `http://localhost:3000/api/bookings/${bookingId}/check-out`,
+    const res = await fetch(apiUrl(`/api/bookings/${bookingId}/check-out`),
       {
         method: 'POST',
         headers: {

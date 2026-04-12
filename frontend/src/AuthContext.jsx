@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { apiUrl } from './api';
 
 const AuthContext = createContext(null);
 
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    fetch('http://localhost:3000/api/me', {
+    fetch(apiUrl('/api/me'), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

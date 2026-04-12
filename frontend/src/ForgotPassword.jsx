@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { apiUrl } from './api';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -11,7 +12,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/api/forgot-password', {
+      const res = await fetch(apiUrl('/api/forgot-password'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

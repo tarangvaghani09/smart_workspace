@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { toast } from 'react-toastify';
+import { apiUrl } from './api';
 
 const getApiErrorMessage = (data, fallback = 'Booking failed') => {
   const messages = [];
@@ -73,7 +74,7 @@ export default function BookRoom({ room = null, onClose }) {
 
   // fetch credit 
   useEffect(() => {
-    fetch('http://localhost:3000/api/credits', {
+    fetch(apiUrl('/api/credits'), {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -99,7 +100,7 @@ export default function BookRoom({ room = null, onClose }) {
     }
 
     const query = params.toString() ? `?${params.toString()}` : '';
-    fetch(`http://localhost:3000/api/resources${query}`, {
+    fetch(apiUrl(`/api/resources${query}`), {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -229,8 +230,7 @@ export default function BookRoom({ room = null, onClose }) {
         payload.resources = resources;
       }
 
-      const res = await fetch(
-        'http://localhost:3000/api/bookings',
+      const res = await fetch(apiUrl('/api/bookings'),
         {
           method: 'POST',
           headers: {

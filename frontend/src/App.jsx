@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiUrl } from './api';
 
 function App() {
     const [title, setTitle] = useState('');
@@ -20,7 +21,7 @@ function App() {
         const endUTC = new Date(`${date}T${endTime}:00+05:30`).toISOString();
 
         try {
-            const res = await fetch('http://localhost:3000/api/bookings', {
+            const res = await fetch(apiUrl('/api/bookings'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { apiUrl } from './api';
 
 function Register() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ function Register() {
 
   //  DEPARTMENTS 
   useEffect(() => {
-    fetch('http://localhost:3000/api/departments')
+    fetch(apiUrl('/api/departments'))
       .then(res => res.json())
       .then(data => {
         console.log('Departments:', data)
@@ -50,7 +51,7 @@ function Register() {
         departmentId: form.departmentId ? Number(form.departmentId) : undefined
       };
 
-      const res = await fetch('http://localhost:3000/api/register', {
+      const res = await fetch(apiUrl('/api/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

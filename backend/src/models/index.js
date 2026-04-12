@@ -2,6 +2,20 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' });
 import { Sequelize } from 'sequelize';
 
+const sslRequired =
+  String(process.env.DB_SSL || '').toLowerCase() === 'true' ||
+  String(process.env.DB_SSL_MODE || '').toUpperCase() === 'REQUIRED';
+
+const sslOptions = sslRequired
+  ? {
+      ssl: process.env.DB_SSL_CA
+        ? {
+            ca: process.env.DB_SSL_CA
+          }
+        : true
+    }
+  : {};
+
 // Create Sequelize instance for MySQL
 const sequelize = new Sequelize(
   process.env.DB_NAME,
@@ -15,7 +29,8 @@ const sequelize = new Sequelize(
 
     // Allow multiple SQL statements
     dialectOptions: {
-      multipleStatements: true
+      multipleStatements: true,
+      ...sslOptions
     },
 
     pool: {

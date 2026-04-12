@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { apiUrl } from './api';
 
 export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -19,7 +20,7 @@ export default function ChangePassword() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:3000/api/change-password', {
+      const res = await fetch(apiUrl('/api/change-password'), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

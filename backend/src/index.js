@@ -15,8 +15,16 @@ const app = express();
 app.set('trust proxy', 'loopback');
 app.use(express.static(path.join(process.cwd(), 'src/public')));
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://192.168.5.91:3000'
+];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://192.168.5.91:3000'],
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true

@@ -4,6 +4,7 @@ import AdminLayout from './AdminLayout';
 import { toast } from 'react-toastify';
 import AlertDialog from './components/AlertDialog';
 import { Link } from 'react-router-dom';
+import { apiUrl } from './api';
 
 export default function RoomManagement() {
   const [rooms, setRooms] = useState([]);
@@ -74,7 +75,7 @@ export default function RoomManagement() {
     };
 
     try {
-      const res = await fetch('http://localhost:3000/api/search/rooms', {
+      const res = await fetch(apiUrl('/api/search/rooms'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -113,8 +114,7 @@ export default function RoomManagement() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/rooms/${editingRoom.id}`,
+      const res = await fetch(apiUrl(`/api/rooms/${editingRoom.id}`),
         {
           method: 'PUT',
           headers: {
@@ -157,7 +157,7 @@ export default function RoomManagement() {
 
   const performToggleRoom = async room => {
     try {
-      const res = await fetch(`http://localhost:3000/api/rooms/${room.id}/status`, {
+      const res = await fetch(apiUrl(`/api/rooms/${room.id}/status`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ export default function RoomManagement() {
   /* ================= DELETE ================= */
   const performDeleteRoom = async roomId => {
     try {
-      const res = await fetch(`http://localhost:3000/api/rooms/${roomId}`, {
+      const res = await fetch(apiUrl(`/api/rooms/${roomId}`), {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
 import { toast } from 'react-toastify';
+import { apiUrl } from './api';
 
 export default function Approvals() {
 
@@ -16,7 +17,7 @@ export default function Approvals() {
 
   /* ---------------- LOAD DEPARTMENTS ---------------- */
   useEffect(() => {
-    fetch('http://localhost:3000/api/departments')
+    fetch(apiUrl('/api/departments'))
       .then(res => res.json())
       .then(data => {
         setDepartments(data);
@@ -42,8 +43,7 @@ export default function Approvals() {
 
     try {
 
-      const res = await fetch(
-        `http://localhost:3000/api/approvals/pending?departmentId=${selectedDepartment}`,
+      const res = await fetch(apiUrl(`/api/approvals/pending?departmentId=${selectedDepartment}`),
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -74,8 +74,7 @@ export default function Approvals() {
     try {
       setActionLoading(bookingId);
 
-      const res = await fetch(
-        'http://localhost:3000/api/approve-booking',
+      const res = await fetch(apiUrl('/api/approve-booking'),
         {
           method: 'POST',
           headers: {

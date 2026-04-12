@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { apiUrl } from './api';
 
 export default function ResetPassword() {
   const { token } = useParams();
@@ -17,7 +18,7 @@ export default function ResetPassword() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/api/reset-password', {
+      const res = await fetch(apiUrl('/api/reset-password'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

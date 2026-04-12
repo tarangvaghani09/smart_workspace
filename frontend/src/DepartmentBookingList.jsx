@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
+import { apiUrl } from './api';
 
 export default function DepartmentBookingList() {
   const [departments, setDepartments] = useState([]);
@@ -14,7 +15,7 @@ export default function DepartmentBookingList() {
 
   // 🔹 Load departments
   useEffect(() => {
-    fetch('http://localhost:3000/api/departments')
+    fetch(apiUrl('/api/departments'))
       .then(res => res.json())
       .then(data => {
         setDepartments(data);
@@ -32,8 +33,7 @@ export default function DepartmentBookingList() {
 
     setLoading(true);
 
-    fetch(
-      `http://localhost:3000/api/bookings/department?departmentId=${selectedDepartment}`,
+    fetch(apiUrl(`/api/bookings/department?departmentId=${selectedDepartment}`),
       {
         headers: { Authorization: `Bearer ${token}` }
       }

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { toast } from 'react-toastify';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { apiUrl } from './api';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -21,7 +22,7 @@ function Login() {
     setError({});
 
     try {
-      const res = await fetch('http://localhost:3000/api/login', {
+      const res = await fetch(apiUrl('/api/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
