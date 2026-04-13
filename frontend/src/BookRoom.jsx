@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { toast } from 'react-toastify';
+import { FaLock, FaSpinner, FaXmark } from 'react-icons/fa6';
 import { apiUrl } from './api';
 
 const getApiErrorMessage = (data, fallback = 'Booking failed') => {
@@ -50,6 +51,7 @@ export default function BookRoom({ room = null, onClose }) {
     availableCredits: 0,
     lockedCredits: 0
   });
+  const [creditsLoading, setCreditsLoading] = useState(true);
 
   const modalRef = useRef(null);
   const token = localStorage.getItem('token');
@@ -74,6 +76,7 @@ export default function BookRoom({ room = null, onClose }) {
 
   // fetch credit 
   useEffect(() => {
+    setCreditsLoading(true);
     fetch(apiUrl('/api/credits'), {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -81,7 +84,8 @@ export default function BookRoom({ room = null, onClose }) {
       .then(setCredits)
       .catch(() =>
         setCredits({ availableCredits: 0, lockedCredits: 0 })
-      );
+      )
+      .finally(() => setCreditsLoading(false));
   }, [token]);
 
   // fetch resource 
@@ -280,7 +284,9 @@ export default function BookRoom({ room = null, onClose }) {
               Reserve room or devices
             </p>
           </div>
-          <button onClick={onClose}>✕</button>
+          <button onClick={onClose} aria-label="Close">
+            <FaXmark />
+          </button>
         </div>
 
         {/* BODY */}
@@ -423,10 +429,14 @@ export default function BookRoom({ room = null, onClose }) {
             <div className='flex flex-col items-end'>
               <p className="text-xs">Balance</p>
               <p className="font-bold">
-                {credits.availableCredits}
+                {creditsLoading ? <FaSpinner className="animate-spin text-slate-400" /> : credits.availableCredits}
               </p>
-              <p className="text-xs text-amber-600">🔒 {credits.lockedCredits} locked in pending
-              </p>
+              {!creditsLoading && (
+                <p className="text-xs text-amber-600 inline-flex items-center gap-1">
+                  <FaLock className="text-[11px]" />
+                  {credits.lockedCredits} locked in pending
+                </p>
+              )}
             </div>
           </div>
 
@@ -458,4 +468,5 @@ export default function BookRoom({ room = null, onClose }) {
     </div>
   );
 }
+
 

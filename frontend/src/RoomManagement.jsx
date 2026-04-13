@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
 import { toast } from 'react-toastify';
 import AlertDialog from './components/AlertDialog';
+import { FaSpinner, FaXmark } from 'react-icons/fa6';
 import { Link } from 'react-router-dom';
 import { apiUrl } from './api';
 
@@ -21,6 +22,8 @@ export default function RoomManagement() {
   const [capacityFilter, setCapacityFilter] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
+
+  const [isFetching, setIsFetching] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
@@ -75,6 +78,7 @@ export default function RoomManagement() {
     };
 
     try {
+      setIsFetching(true);
       const res = await fetch(apiUrl('/api/search/rooms'), {
         method: 'POST',
         headers: {
@@ -88,14 +92,17 @@ export default function RoomManagement() {
       if (!res.ok) {
         toast.error(data.error || 'Invalid time selection');
         setRooms([]);
+        setIsFetching(false);
         return;
       }
       setRooms(Array.isArray(data) ? data : data.rooms || []);
+      setIsFetching(false);
       console.log('Fetched rooms:', data);
     } catch (err) {
       console.error('Error fetching rooms:', err);
       toast.error('Something went wrong while searching rooms');
       setRooms([]);
+      setIsFetching(false);
     }
   };
 
@@ -382,7 +389,7 @@ export default function RoomManagement() {
                   <div className="flex justify-between items-center">
                     <h3 className="font-bold">{room.name}</h3>
                     <span className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
-                      ₹{room.creditsPerHour}/hr
+                      Rs {room.creditsPerHour}/hr
                     </span>
                   </div>
 
@@ -453,7 +460,7 @@ export default function RoomManagement() {
                   <div className="flex justify-between items-center">
                     <h3 className="font-bold">{room.name}</h3>
                     <span className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
-                      ₹{room.creditsPerHour}/hr
+                      Rs {room.creditsPerHour}/hr
                     </span>
                   </div>
 
@@ -481,8 +488,12 @@ export default function RoomManagement() {
             ))}
           </div>
 
-          {filteredRooms.length === 0 && (
-            <p className="text-gray-500">No rooms found.</p>
+          {isFetching ? (
+            <p className="text-gray-500 flex items-center gap-2">
+              <FaSpinner className="animate-spin" /> Loading...
+            </p>
+          ) : filteredRooms.length === 0 && (
+            <p className="text-gray-500">No Data Found</p>
           )}
         </div>
       </div>
@@ -498,7 +509,9 @@ export default function RoomManagement() {
                   Update room details and pricing.
                 </p>
               </div>
-              <button onClick={() => setEditingRoom(null)} className="cursor-pointer text-lg">✕</button>
+              <button onClick={() => setEditingRoom(null)} className="cursor-pointer text-lg" aria-label="Close">
+                <FaXmark />
+              </button>
             </div>
             <div className="p-5">
               <input
@@ -559,3 +572,6 @@ export default function RoomManagement() {
     </AdminLayout>
   );
 }
+
+
+

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import { FaInbox, FaLock, FaSpinner } from 'react-icons/fa6';
 import { useAuth } from './AuthContext';
 import BookingListHomePage from './BookingListHomePage';
 import { apiUrl } from './api';
@@ -9,22 +10,30 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [credits, setCredits] = useState({ availableCredits: 0, lockedCredits: 0 });
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [creditsLoading, setCreditsLoading] = useState(true);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
+    setBookingsLoading(true);
     fetch(apiUrl('/api/bookings'), {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
-      .then(data => setBookings(Array.isArray(data) ? data : []));
+      .then(data => setBookings(Array.isArray(data) ? data : []))
+      .catch(() => setBookings([]))
+      .finally(() => setBookingsLoading(false));
   }, [token]);
 
   useEffect(() => {
+    setCreditsLoading(true);
     fetch(apiUrl('/api/credits'), {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
-      .then(data => setCredits(data));
+      .then(data => setCredits(data))
+      .catch(() => setCredits({ availableCredits: 0, lockedCredits: 0 }))
+      .finally(() => setCreditsLoading(false));
   }, [token]);
 
   const now = new Date();
@@ -110,10 +119,13 @@ export default function Dashboard() {
             <span className="text-sm text-slate-500 font-medium text-muted-foreground uppercase tracking-wider">Available Credits</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-credit-card h-4 w-4 text-accent"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" x2="22" y1="10" y2="10"></line></svg>
           </div>
-          <div className="text-3xl font-display font-bold text-slate-900">{credits.availableCredits}</div>
+          <div className="text-3xl font-display font-bold text-slate-900">{creditsLoading ? <FaSpinner className="animate-spin text-slate-400" /> : credits.availableCredits}</div>
           <p className="text-xs text-slate-500 text-muted-foreground mt-1">Refreshes on the 1st of next month</p>
           {credits.lockedCredits > 0 && (
-            <p className="text-xs text-amber-600 font-medium mt-2">🔒 {credits.lockedCredits} locked in pending</p>
+            <p className="text-xs text-amber-600 font-medium mt-2 inline-flex items-center gap-1">
+              <FaLock className="text-[11px]" />
+              {credits.lockedCredits} locked in pending
+            </p>
           )}
         </div>
 
@@ -122,7 +134,7 @@ export default function Dashboard() {
             <span className="text-sm text-slate-500 font-medium text-muted-foreground uppercase tracking-wider">Upcoming Events</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar h-4 w-4 text-primary"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
           </div>
-          <div className="text-3xl font-display font-bold text-slate-900">  {confirmedBookings ? confirmedBookings.length : 0}</div>
+          <div className="text-3xl font-display font-bold text-slate-900">  {bookingsLoading ? <FaSpinner className="animate-spin text-slate-400" /> : confirmedBookings ? confirmedBookings.length : 0}</div>
           {/* {bookings.length} */}
           <p className="text-xs text-slate-500 text-muted-foreground mt-1">Scheduled for this month</p>
         </div>
@@ -134,7 +146,7 @@ export default function Dashboard() {
             <span className="text-sm font-medium text-primary uppercase tracking-wider text-blue-700">Department</span>
             <div class="h-4 w-4 rounded-full bg-primary/20"></div>
           </div>
-          <div className="text-2xl font-display font-bold text-slate-900 truncate">{user?.department?.name || '—'}</div>
+          <div className="text-2xl font-display font-bold text-slate-900 truncate">{user?.department?.name || '-'}</div>
           <p className="text-xs text-primary/80 mt-1 font-medium text-blue-700">Standard Allocation</p>
         </div>
 
@@ -163,7 +175,13 @@ export default function Dashboard() {
           </div>
 
           {/* BODY */}
-          {upNext ? (
+          {bookingsLoading ? (
+            <>
+              <h2 className="text-xl text-slate-300 font-semibold text-center mt-10">
+                <FaSpinner className="inline-block animate-spin text-slate-400" />
+              </h2>
+            </>
+          ) : upNext ? (
             <>
               <h2 className="text-slate-400 mt-2 text-lg">
                 {new Date(upNext.startTime).toLocaleDateString('en-US', {
@@ -185,8 +203,9 @@ export default function Dashboard() {
             </>
           ) : (
             <>
-              <h2 className="text-xl text-slate-300 font-semibold text-center mt-10">
-                📭 No confirmed bookings
+              <h2 className="text-xl text-slate-300 font-semibold text-center mt-10 inline-flex items-center justify-center gap-2">
+                <FaInbox className="text-slate-400" />
+                No Data Found
               </h2>
               <p className="text-sm text-slate-400 text-center mt-2">
                 Your next confirmed booking will appear here.
@@ -220,3 +239,4 @@ export default function Dashboard() {
     </>
   );
 }
+

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { FaSpinner } from 'react-icons/fa6';
 import BookRoom from './BookRoom';
 import moment from 'moment-timezone';
 import { apiUrl } from './api';
@@ -10,6 +11,7 @@ export default function SearchRooms() {
   const [selectedRoom, setSelectedRoom] = useState(null);
 
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [type, setType] = useState('all');
   const [capacity, setCapacity] = useState('');
@@ -137,6 +139,7 @@ export default function SearchRooms() {
       ...(hasStart && hasEnd && { startTime, endTime }),
     };
 
+    setIsLoading(true);
     try {
       const res = await fetch(apiUrl('/api/search/rooms'), {
         method: 'POST',
@@ -165,6 +168,8 @@ export default function SearchRooms() {
       setError('Something went wrong while searching rooms');
       setRooms([]);
       setFilteredRooms([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -339,7 +344,7 @@ export default function SearchRooms() {
                 <div className="flex justify-between">
                   <h3 className="font-bold">{room.name}</h3>
                   <span className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
-                    ₹{room.creditsPerHour}/hr
+                    Rs {room.creditsPerHour}/hr
                   </span>
                 </div>
 
@@ -357,8 +362,12 @@ export default function SearchRooms() {
             </div>
           ))}
 
-          {!error && filteredRooms?.length === 0 && (
-            <p className="text-gray-500">No rooms found.</p>
+          {isLoading ? (
+            <p className="text-gray-500 flex items-center gap-2">
+              <FaSpinner className="animate-spin" /> Loading...
+            </p>
+          ) : !error && filteredRooms?.length === 0 && (
+            <p className="text-gray-500">No Data Found</p>
           )}
         </div>
       </div>
@@ -373,3 +382,6 @@ export default function SearchRooms() {
     </>
   );
 }
+
+
+

@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { toast } from 'react-toastify';
 import AlertDialog from './components/AlertDialog';
+import { FaCreditCard, FaEllipsisVertical, FaLocationDot, FaPlug, FaSpinner } from 'react-icons/fa6';
 import { apiUrl } from './api';
 
 export default function BookingList() {
@@ -10,6 +11,7 @@ export default function BookingList() {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [now, setNow] = useState(Date.now());
+  const [isLoading, setIsLoading] = useState(true);
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
     title: '',
@@ -36,12 +38,28 @@ export default function BookingList() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
     fetch(apiUrl('/api/bookings'), {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
-      .then(setBookings);
-  }, []);
+      .then(data => {
+        if (!isMounted) return;
+        setBookings(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setBookings([]);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setIsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30000);
@@ -287,14 +305,16 @@ export default function BookingList() {
                   </span>
 
                   {(b.Room?.name || b.Rooms?.[0]?.name) && (
-                    <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600">
-                      📍 {b.Room?.name || b.Rooms?.[0]?.name}
+                    <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 inline-flex items-center gap-1">
+                      <FaLocationDot className="text-[11px]" />
+                      {b.Room?.name || b.Rooms?.[0]?.name}
                     </span>
                   )}
 
                   {b.Resources?.length > 0 && (
-                    <span className="px-2 py-0.5 rounded bg-orange-50 text-orange-600">
-                      🔌 {b.Resources.map(r =>
+                    <span className="px-2 py-0.5 rounded bg-orange-50 text-orange-600 inline-flex items-center gap-1">
+                      <FaPlug className="text-[11px]" />
+                      {b.Resources.map(r =>
                         `${r.name}${r.BookingResource?.quantity > 1
                           ? ` x ${r.BookingResource.quantity}`
                           : ''}`
@@ -303,8 +323,9 @@ export default function BookingList() {
                   )}
 
                   {b.creditsUsed && (
-                    <span className="px-2 py-0.5 rounded bg-white text-slate-700 border border-slate-200">
-                      💳 {b.creditsUsed} credits
+                    <span className="px-2 py-0.5 rounded bg-white text-slate-700 border border-slate-200 inline-flex items-center gap-1">
+                      <FaCreditCard className="text-[11px]" />
+                      {b.creditsUsed} credits
                     </span>
                   )}
 
@@ -337,7 +358,7 @@ export default function BookingList() {
                     }
                     className="text-gray-400 hover:text-gray-700 inline-flex"
                   >
-                    <span className="text-xl cursor-pointer">⋮</span>
+                    <FaEllipsisVertical className="text-lg cursor-pointer" />
                   </button>
                 )}
 
@@ -358,11 +379,14 @@ export default function BookingList() {
             </div>
           ))}
 
-          {filteredBookings.length === 0 && (
+          {isLoading ? (
             <div className="py-20 text-center">
-              <div className="text-4xl mb-4">📭</div>
+              <FaSpinner className="mx-auto text-2xl text-slate-400 animate-spin" />
+            </div>
+          ) : filteredBookings.length === 0 && (
+            <div className="py-20 text-center">
               <p className="text-gray-400 font-medium">
-                No bookings scheduled yet.
+                No Data Found
               </p>
             </div>
           )}
@@ -380,3 +404,4 @@ export default function BookingList() {
     </div>
   );
 }
+
