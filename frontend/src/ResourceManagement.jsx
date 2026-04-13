@@ -4,6 +4,7 @@ import AdminLayout from './AdminLayout';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AlertDialog from './components/AlertDialog';
+import { FaSpinner } from 'react-icons/fa6';
 import { apiUrl } from './api';
 
 export default function ResourceManagement() {
@@ -25,6 +26,7 @@ export default function ResourceManagement() {
   const [minCredits, setMinCredits] = useState('');
   const [maxCredits, setMaxCredits] = useState('');
 
+  const [isFetching, setIsFetching] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
@@ -49,14 +51,19 @@ export default function ResourceManagement() {
   }, [search, minQty, maxQty, minCredits, maxCredits, resources]);
 
   const fetchResources = async () => {
-    const res = await fetch(apiUrl('/api/listAllResources'), {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    const data = await res.json();
-    setResources(data);
-    setFilteredResources(data);
+    setIsFetching(true);
+    try {
+      const res = await fetch(apiUrl('/api/listAllResources'), {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await res.json();
+      setResources(data);
+      setFilteredResources(data);
+    } finally {
+      setIsFetching(false);
+    }
   };
 
   const applyFilters = () => {
@@ -337,6 +344,12 @@ export default function ResourceManagement() {
             ))}
           </div>
 
+          {isFetching && (
+            <div className="w-full flex justify-center py-6">
+              <FaSpinner className="animate-spin text-slate-400 text-2xl" />
+            </div>
+          )}
+
           {/* DIVIDER (only if inactive exist) */}
           {inactiveResources.length > 0 && (
             <div className="flex items-center gap-4">
@@ -393,6 +406,12 @@ export default function ResourceManagement() {
               </div>
             ))}
           </div>
+
+          {!isFetching && activeResources.length === 0 && inactiveResources.length === 0 && (
+            <div className="w-full flex justify-center py-6">
+              <p className="text-gray-500">No Data Found</p>
+            </div>
+          )}
 
         </div>
       </div>

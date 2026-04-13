@@ -489,11 +489,13 @@ export default function RoomManagement() {
           </div>
 
           {isFetching ? (
-            <p className="text-gray-500 flex items-center gap-2">
-              <FaSpinner className="animate-spin" /> Loading...
-            </p>
+            <div className="w-full flex justify-center py-6">
+              <FaSpinner className="animate-spin text-slate-400 text-2xl" />
+            </div>
           ) : filteredRooms.length === 0 && (
-            <p className="text-gray-500">No Data Found</p>
+            <div className="w-full flex justify-center py-6">
+              <p className="text-gray-500">No Data Found</p>
+            </div>
           )}
         </div>
       </div>
