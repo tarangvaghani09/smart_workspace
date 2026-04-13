@@ -54,7 +54,7 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-80px)] items-center justify-center">
+    <div className="flex min-h-[calc(100vh-120px)] items-start justify-center pt-4 pb-6 sm:items-center sm:pt-0">
       <Helmet>
         <title>Change Password</title>
       </Helmet>
