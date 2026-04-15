@@ -363,7 +363,7 @@ export default function SearchRooms() {
           ))}
 
           {isLoading ? (
-            <div className="w-full flex justify-center py-6">
+            <div className="col-span-full flex min-h-[45vh] items-center justify-center">
               <FaSpinner className="animate-spin text-slate-400 text-2xl" />
             </div>
           ) : !error && filteredRooms?.length === 0 && (
