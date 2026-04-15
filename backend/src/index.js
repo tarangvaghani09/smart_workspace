@@ -20,15 +20,43 @@ const allowedOrigins = [
   'http://192.168.5.91:3000'
 ];
 if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
+  const urls = process.env.FRONTEND_URL.split(',')
+    .map((url) => url.trim())
+    .filter(Boolean);
+  allowedOrigins.push(...urls);
 }
 
-app.use(cors({
-  origin: allowedOrigins,
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow non-browser clients (no Origin header)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
+    // Allow Vercel preview/prod domains for this app without needing to keep env in sync.
+    // Example: https://smart-workspace-*.vercel.app
+    try {
+      const url = new URL(origin);
+      if (
+        url.protocol === 'https:' &&
+        url.hostname.endsWith('.vercel.app') &&
+        url.hostname.startsWith('smart-workspace-')
+      ) {
+        return callback(null, true);
+      }
+    } catch {
+      // ignore URL parsing errors
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
