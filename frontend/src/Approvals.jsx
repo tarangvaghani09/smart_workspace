@@ -116,8 +116,8 @@ export default function Approvals() {
         <div className="px-6 py-4 border-b border-gray-300 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
 
           <div>
-            <p className="text-md font-semibold"> Pending Requests ({pendingBookings.length}) </p>
-            <p className="text-sm text-gray-400 font-normal pt-2">
+            <h2 className="text-xl font-bold mb-2"> Pending Requests ({pendingBookings.length}) </h2>
+            <p className="text-gray-500">
               {selectedDept ? selectedDept?.name : 'Loading...'} department
             </p>
           </div>
