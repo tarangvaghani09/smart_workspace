@@ -73,17 +73,20 @@ export function calculateCredits({ creditsPerHour }, hours, quantity = 1) {
   return hours * creditsPerHour * quantity;
 }
 
-const isWithinAllowedHours = (start, end) => {
-  const startHour = start.getHours();
-  const startMinutes = start.getMinutes();
-  const endHour = end.getHours();
-  const endMinutes = end.getMinutes();
+const isWithinAllowedHours = (start, end, timezone = 'Asia/Kolkata') => {
+  // Compare against business hours in the provided timezone (not the server timezone).
+  const startLocal = moment.tz(start, timezone || 'Asia/Kolkata');
+  const endLocal = moment.tz(end, timezone || 'Asia/Kolkata');
 
-  // Allowed window: 09:00 (inclusive) -> 17:00 (inclusive only if minutes === 0)
-  const isStartValid = startHour > 9 - 1 || (startHour === 9 && startMinutes >= 0);
-  const isEndValid = endHour < 17 || (endHour === 17 && endMinutes === 0);
+  const startMinutes = startLocal.hours() * 60 + startLocal.minutes();
+  const endMinutes = endLocal.hours() * 60 + endLocal.minutes();
 
-  return isStartValid && isEndValid;
+  // Start: 09:00 <= start < 17:00
+  // End:   09:00 < end <= 17:00 (allow exactly 17:00)
+  const startOk = startMinutes >= 9 * 60 && startMinutes < 17 * 60;
+  const endOk = endMinutes > 9 * 60 && endMinutes <= 17 * 60;
+
+  return startOk && endOk;
 };
 
 const parseBookingDateTime = (value, timezone = 'Asia/Kolkata') => {
@@ -871,7 +874,7 @@ export const createBooking = async (req, res) => {
       if (o.end <= o.start) {
         throw new Error('End time must be after start time');
       }
-      if (!isWithinAllowedHours(o.start, o.end)) {
+      if (!isWithinAllowedHours(o.start, o.end, timezone)) {
         throw new Error('Bookings are allowed only between 9:00 AM and 5:00 PM');
       }
 
