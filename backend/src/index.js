@@ -77,6 +77,13 @@ app.use(
 
 const PORT = process.env.PORT || 3000;
 
+// Bind the port as early as possible so Render can detect the service quickly.
+// DB sync/alter can take time, and delaying `listen()` can cause transient 502s ("no deploy").
+const server = app.listen(PORT, () => {
+  console.log(`Smart Workspace backend listening at http://localhost:${PORT}`);
+  console.log('Swagger docs at http://192.168.5.91:3000/docs');
+});
+
 async function start() {
   try {
     await sequelize.authenticate();
@@ -88,14 +95,12 @@ async function start() {
     await sequelize.sync({ alter: true });
     console.log('Database synchronized');
 
-    app.listen(PORT, () => {
-      console.log(`Smart Workspace backend listening at http://localhost:${PORT}`);
-      console.log('Swagger docs at http://192.168.5.91:3000/docs');
-    });
-
     cronJobs.startAll();
   } catch (err) {
     console.error('Failed to connect to database:', err.message);
+    server.close(() => {
+      process.exit(1);
+    });
     process.exit(1);
   }
 }
