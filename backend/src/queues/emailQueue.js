@@ -35,7 +35,7 @@ const runWithRetry = async (jobName, payload) => {
       lastError = err;
       console.error(
         `Email job failed (${jobName}) attempt ${attempt}/${DEFAULT_ATTEMPTS}:`,
-        err?.message || err
+        err?.code ? `${err.code}: ${err.message || err}` : (err?.message || err)
       );
 
       if (attempt < DEFAULT_ATTEMPTS) {

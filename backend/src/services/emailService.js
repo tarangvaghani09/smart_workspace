@@ -6,15 +6,34 @@ import path from 'path';
 import { generateIcsFile } from './icsGenerator.js';
 import { Booking, User, Room, Resource, BookingResource, Department } from '../models/index.js';
 
+const smtpHost = process.env.SMTP_HOST;
+const smtpPort = Number(process.env.SMTP_PORT || 587);
+const smtpSecure =
+  String(process.env.SMTP_SECURE || '').toLowerCase() === 'true' || smtpPort === 465;
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: false,
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpSecure,
+  // For STARTTLS ports like 587/2525, force TLS upgrade to avoid silent plain-SMTP failures.
+  requireTLS: !smtpSecure,
+  connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 20000),
+  greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT_MS || 20000),
+  socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 20000),
+  tls: smtpHost ? { servername: smtpHost } : undefined,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
   }
 });
+
+transporter.verify()
+  .then(() => {
+    console.log('SMTP connection verified');
+  })
+  .catch((err) => {
+    console.error('SMTP verify failed:', err?.message || err);
+  });
 
 async function getRoomTextForBooking(booking) {
   // Current schema has direct FK bookings.roomId -> Room
