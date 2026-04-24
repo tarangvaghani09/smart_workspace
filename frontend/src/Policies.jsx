@@ -54,6 +54,15 @@ export default function Policies() {
             If you do not check in within <span className="font-semibold">15 minutes after</span> your booking start time, the system may automatically update the booking status (auto check-out / no-show).
           </p>
         </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <h2 className="font-semibold text-gray-900 mb-1">
+            Cancellation & Refunds
+          </h2>
+          <p className="text-gray-600">
+            If you cancel a booking at least <span className="font-semibold">48 hours</span> before the start time, you receive a <span className="font-semibold">90%</span> refund (10% deduction). If you cancel within <span className="font-semibold">48 hours</span> of the start time, no refund is provided.
+          </p>
+        </div>
       </div>
     </div>
   );
