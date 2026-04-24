@@ -4,8 +4,10 @@ import { FaSpinner } from 'react-icons/fa6';
 import BookRoom from './BookRoom';
 import moment from 'moment-timezone';
 import { apiUrl } from './api';
+import { useAuth } from './AuthContext';
 
 export default function SearchRooms() {
+  const { user } = useAuth();
   const [rooms, setRooms] = useState([]);
   const [filteredRooms, setFilteredRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -333,10 +335,17 @@ export default function SearchRooms() {
                   </defs>
                   <rect width="100%" height="100%" fill="url(#grid)"></rect>
                 </svg>
-                <div className="z-10 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm text-sm font-semibold tracking-wide text-foreground">
-                  {room.type === 'boardroom'
-                    ? 'Board Room'
-                    : 'Standard Room'}
+                <div className="z-10">
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm text-sm font-semibold tracking-wide text-foreground">
+                    {room.type === 'boardroom'
+                      ? 'Board Room'
+                      : 'Standard Room'}
+                  </div>
+                  {room.type === 'boardroom' && user?.role !== 'admin' && (
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 translate-y-[26px] bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full text-xs font-semibold">
+                      Approval Required
+                    </span>
+                  )}
                 </div>
               </div>
 
