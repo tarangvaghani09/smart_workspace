@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { toast } from 'react-toastify';
 import { FiLogOut } from 'react-icons/fi';
-import { RiLockPasswordLine } from 'react-icons/ri';
+import { RiFileList2Line, RiLockPasswordLine } from 'react-icons/ri';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -221,6 +221,18 @@ export default function Navbar() {
                   type="button"
                   onClick={() => {
                     setProfileOpen(false);
+                    navigate('/policies');
+                    setMobileOpen(false);
+                  }}
+                  className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer flex items-center gap-2"
+                >
+                  <RiFileList2Line className="h-4 w-4" />
+                  Policies
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileOpen(false);
                     handleLogout();
                     setMobileOpen(false);
                   }}
@@ -309,6 +321,17 @@ export default function Navbar() {
             >
               <RiLockPasswordLine className="h-4 w-4" />
               Change Password
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setProfileOpen(false);
+                navigate('/policies');
+              }}
+              className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer flex items-center gap-2"
+            >
+              <RiFileList2Line className="h-4 w-4" />
+              Policies
             </button>
             <button
               type="button"

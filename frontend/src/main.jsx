@@ -23,6 +23,7 @@ import AddResource from './AddResource';
 import DepartmentBookingList from './DepartmentBookingList';
 import Register from './Register';
 import ChangePassword from './ChangePassword';
+import Policies from './Policies';
 import ForgotPassword from './ForgotPassword';
 import ResetPassword from './ResetPassword';
 import { AuthProvider } from './AuthContext';
@@ -79,6 +80,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             element={
               <ProtectedRoute>
                 <ChangePassword />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/policies"
+            element={
+              <ProtectedRoute>
+                <Policies />
               </ProtectedRoute>
             }
           />
