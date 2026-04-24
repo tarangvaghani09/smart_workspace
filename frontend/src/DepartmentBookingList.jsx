@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import AdminLayout from './AdminLayout';
 import { apiUrl } from './api';
+import { FaSpinner } from 'react-icons/fa6';
 
 export default function DepartmentBookingList() {
   const [departments, setDepartments] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [departmentsLoading, setDepartmentsLoading] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -15,6 +17,7 @@ export default function DepartmentBookingList() {
 
   // 🔹 Load departments
   useEffect(() => {
+    setDepartmentsLoading(true);
     fetch(apiUrl('/api/departments'))
       .then(res => res.json())
       .then(data => {
@@ -24,7 +27,8 @@ export default function DepartmentBookingList() {
           setSelectedDepartment(data[0].id.toString());
         }
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setDepartmentsLoading(false));
   }, []);
 
   // Load bookings when department changes
@@ -97,18 +101,24 @@ export default function DepartmentBookingList() {
               ))}
             </select>
 
-            <select
-              value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(e.target.value)}
-              className="border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer w-full sm:w-auto"
-            >
-              {/* <option value="">Select Department</option> */}
-              {departments?.map(d => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
+            {departmentsLoading ? (
+              <div className="border rounded-xl border-gray-300 text-gray-600 p-2 px-4 w-full sm:w-[220px] flex items-center justify-center">
+                <FaSpinner className="animate-spin text-slate-400" />
+              </div>
+            ) : (
+              <select
+                value={selectedDepartment}
+                onChange={(e) => setSelectedDepartment(e.target.value)}
+                className="border rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 px-4 cursor-pointer w-full sm:w-auto"
+              >
+                {/* <option value="">Select Department</option> */}
+                {departments?.map(d => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 

@@ -344,7 +344,7 @@ export default function SearchRooms() {
                 <div className="flex justify-between">
                   <h3 className="font-bold">{room.name}</h3>
                   <span className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
-                    Rs {room.creditsPerHour}/hr
+                    ₹ {room.creditsPerHour}/hr
                   </span>
                 </div>
 
