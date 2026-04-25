@@ -183,7 +183,7 @@ export default function DepartmentBookingList() {
                     </span>
                   )}
 
-                  {(b.status === 'NO_SHOW' || b.status === 'REJECTED') && (
+                  {(b.status === 'NO_SHOW' || b.status === 'REJECTED' || b.status === 'EXPIRED') && (
                     <span className="inline-flex items-center rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-600">
                       {b.status}
                     </span>

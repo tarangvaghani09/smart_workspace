@@ -39,6 +39,7 @@ export default (sequelize) =>
       type: DataTypes.ENUM(
         'PENDING',
         'CONFIRMED',
+        'EXPIRED',
         'REJECTED',
         'CANCELLED',
         'NO_SHOW'

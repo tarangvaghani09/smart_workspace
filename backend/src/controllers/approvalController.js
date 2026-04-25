@@ -116,6 +116,17 @@ export const approveBooking = async (req, res) => {
       throw new Error('Invalid booking');
     }
 
+    // Prevent approving a booking after it has already started/ended.
+    // Pending requests that miss their start time are handled by the cron "approval expiry" job.
+    if (action !== 'REJECT') {
+      const now = new Date();
+      const start = new Date(booking.startTime);
+      const end = new Date(booking.endTime);
+      if (start <= now || end <= now) {
+        throw new Error('Cannot approve a booking that has already started/ended.');
+      }
+    }
+
     if (action === 'REJECT') {
       await releaseLockedCredits(
         booking.departmentId,

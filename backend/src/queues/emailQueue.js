@@ -12,6 +12,9 @@ const handlers = {
   'booking-rejected': async (payload) => {
     await emailService.sendBookingRejectedEmail(payload?.bookingId);
   },
+  'booking-expired': async (payload) => {
+    await emailService.sendBookingExpiredEmail(payload?.bookingId);
+  },
   'booking-no-show': async (payload) => {
     await emailService.sendNoShowNotificationEmail(payload?.bookingId);
   },

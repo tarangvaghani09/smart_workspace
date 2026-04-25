@@ -5,6 +5,7 @@ import { Op } from 'sequelize';
 import {
   getOrCreateCredit,
   refundCredits,
+  releaseLockedCredits,
   resetMonthlyCredits
 } from '../services/creditService.js';
 import emailService from '../services/emailService.js';
@@ -16,6 +17,65 @@ const GHOST_GRACE_MINUTES = Number(process.env.GHOST_GRACE_MINUTES || 15);
 //  GHOST / NO-SHOW BOOKINGS
 
 function startAll() {
+  // AUTO-EXPIRE APPROVAL (PENDING) BOOKINGS
+  // If the start time has passed and the booking is still PENDING, we:
+  // - release locked credits
+  // - return any allocated resources
+  // - mark as REJECTED (expired due to missed approval window)
+  // - notify the user via email
+  cron.schedule('*/5 * * * *', async () => {
+    const transaction = await sequelize.transaction();
+    const emailJobs = [];
+
+    try {
+      const now = new Date();
+
+      const pendingExpired = await Booking.findAll({
+        where: {
+          status: 'PENDING',
+          startTime: { [Op.lte]: now }
+        },
+        include: [{ model: User }],
+        transaction,
+        lock: transaction.LOCK.UPDATE
+      });
+
+      for (const booking of pendingExpired) {
+        // unlock/refund locked credits (if any)
+        if (booking.creditsUsed > 0 && booking.departmentId) {
+          await releaseLockedCredits(
+            booking.departmentId,
+            booking.creditsUsed,
+            transaction
+          );
+        }
+
+        // release held resources/inventory
+        if (!booking.checkedOut) {
+          await returnResourcesForBooking(booking.id, transaction);
+          booking.checkedOut = true;
+        }
+
+        booking.status = 'EXPIRED';
+        booking.decidedBy = null;
+        await booking.save({ transaction });
+
+        emailJobs.push(booking.id);
+      }
+
+      await transaction.commit();
+
+      for (const bookingId of emailJobs) {
+        await emailQueue.add('booking-expired', { bookingId });
+      }
+
+      console.log(`[CRON] Approval expiry processed: ${pendingExpired.length}`);
+    } catch (err) {
+      await transaction.rollback();
+      console.error('[CRON] Approval expiry failed', err);
+    }
+  });
+
   cron.schedule('*/5 * * * *', async () => {
     const transaction = await sequelize.transaction();
     const emailJobs = [];

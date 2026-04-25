@@ -272,7 +272,7 @@ export default function BookingList() {
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${b.status === 'CONFIRMED'
                       ? 'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border bg-green-500/10 text-green-600 border-green-500/20'
-                      : b.status === 'NO_SHOW' || b.status === 'REJECTED'
+                      : b.status === 'NO_SHOW' || b.status === 'REJECTED' || b.status === 'EXPIRED'
                         ? 'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-500/10 text-red-600 border border-red-500/20'
                         : b.status === 'CANCELLED'
                           ? 'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-500/10 text-gray-600 border border-gray-500/20'
@@ -351,7 +351,7 @@ export default function BookingList() {
                   </button>
                 )}
 
-                {!b.checkedIn && b.status !== 'CANCELLED' && b.status !== 'NO_SHOW' && b.status !== 'REJECTED' && !isBookingEnded(b.endTime) && (
+                {!b.checkedIn && b.status !== 'CANCELLED' && b.status !== 'NO_SHOW' && b.status !== 'REJECTED' && b.status !== 'EXPIRED' && !isBookingEnded(b.endTime) && (
                   <button
                     onClick={() =>
                       setOpenMenuId(openMenuId === b.id ? null : b.id)
