@@ -210,6 +210,10 @@ export default function Approvals() {
                   <span className="text-gray-400">
                     • {new Date(b.startTime).toLocaleDateString('en-GB')}
                   </span>
+
+                  <span className="text-gray-400">
+                    • {new Date(b.startTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} – {new Date(b.endTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
                 </p>
               </div>
 
