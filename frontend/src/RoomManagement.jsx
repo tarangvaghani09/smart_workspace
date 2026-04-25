@@ -292,14 +292,14 @@ export default function RoomManagement() {
         {/* FILTER BAR */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-8">
           <input
-            className="border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
+            className="w-full border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
             placeholder="Search by name"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
 
           <select
-            className="border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 cursor-pointer"
+            className="w-ull border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 cursor-pointer"
             value={typeFilter}
             onChange={e => setTypeFilter(e.target.value)}
           >
@@ -315,7 +315,7 @@ export default function RoomManagement() {
             max={maxDateString}
             onChange={(e) => setSelectedDate(e.target.value)}
             onFocus={(e) => e.target.showPicker()}
-            className="border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
+            className="w-full border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
           />
 
           <input
@@ -323,7 +323,7 @@ export default function RoomManagement() {
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
             onFocus={(e) => e.target.showPicker()}
-            className="border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
+            className="w-full border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
           />
 
           <input
@@ -332,12 +332,12 @@ export default function RoomManagement() {
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
             onFocus={(e) => e.target.showPicker()}
-            className={`border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition ${!startTime ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            className={`w-full border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition ${!startTime ? 'cursor-not-allowed' : 'cursor-pointer'}`}
           />
 
           <input
             type="number"
-            className="border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
+            className="w-full border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
             placeholder="Min Capacity"
             value={capacityFilter}
             min={1}
@@ -346,7 +346,7 @@ export default function RoomManagement() {
 
           <input
             type="number"
-            className="border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
+            className="w-full border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
             placeholder="Min Price"
             value={minPrice}
             min={0}
@@ -355,7 +355,7 @@ export default function RoomManagement() {
 
           <input
             type="number"
-            className="border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
+            className="w-full border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
             placeholder="Max Price"
             value={maxPrice}
             min={0}

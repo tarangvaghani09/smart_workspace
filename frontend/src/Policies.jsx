@@ -13,7 +13,7 @@ export default function Policies() {
           Policies
         </h1>
         <p className="mt-2 text-gray-500">
-          Workspace booking rules (shown for clarity; enforcement is handled by the backend).
+          Workspace booking rules (shown for clarity).
         </p>
       </div>
 
