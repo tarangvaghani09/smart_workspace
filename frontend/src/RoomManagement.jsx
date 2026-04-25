@@ -291,76 +291,118 @@ export default function RoomManagement() {
 
         {/* FILTER BAR */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-8">
-          <input
-            className="w-full border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
-            placeholder="Search by name"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Room Name
+            </label>
+            <input
+              className="w-full border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
+              placeholder="Search by name"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
 
-          <select
-            className="w-ull border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 cursor-pointer"
-            value={typeFilter}
-            onChange={e => setTypeFilter(e.target.value)}
-          >
-            <option value="all">All Types</option>
-            <option value="standard">Standard</option>
-            <option value="boardroom">Boardroom</option>
-          </select>
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Room Type
+            </label>
+            <select
+              className="w-ull border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 cursor-pointer"
+              value={typeFilter}
+              onChange={e => setTypeFilter(e.target.value)}
+            >
+              <option value="all">All Types</option>
+              <option value="standard">Standard</option>
+              <option value="boardroom">Boardroom</option>
+            </select>
+          </div>
 
-          <input
-            type="date"
-            value={selectedDate}
-            min={new Date().toISOString().split('T')[0]}
-            max={maxDateString}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            onFocus={(e) => e.target.showPicker()}
-            className="w-full border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Date
+            </label>
+            <input
+              type="date"
+              value={selectedDate}
+              min={new Date().toISOString().split('T')[0]}
+              max={maxDateString}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              onFocus={(e) => e.target.showPicker()}
+              className="w-full border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
+            />
+          </div>
 
-          <input
-            type="time"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            onFocus={(e) => e.target.showPicker()}
-            className="w-full border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Start Time
+            </label>
+            <input
+              type="time"
+              aria-label="Start time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              onFocus={(e) => e.target.showPicker()}
+              className="w-full border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
+            />
+          </div>
 
-          <input
-            type="time"
-            disabled={!startTime}
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            onFocus={(e) => e.target.showPicker()}
-            className={`w-full border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition ${!startTime ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              End Time
+            </label>
+            <input
+              type="time"
+              aria-label="End time"
+              disabled={!startTime}
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              onFocus={(e) => e.target.showPicker()}
+              className={`w-full border p-2 text-gray-600 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition ${!startTime ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            />
+          </div>
 
-          <input
-            type="number"
-            className="w-full border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
-            placeholder="Min Capacity"
-            value={capacityFilter}
-            min={1}
-            onChange={e => setCapacityFilter(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Min Capacity
+            </label>
+            <input
+              type="number"
+              className="w-full border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
+              placeholder="Min Capacity"
+              value={capacityFilter}
+              min={1}
+              onChange={e => setCapacityFilter(e.target.value)}
+            />
+          </div>
 
-          <input
-            type="number"
-            className="w-full border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
-            placeholder="Min Price"
-            value={minPrice}
-            min={0}
-            onChange={e => setMinPrice(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Min Price
+            </label>
+            <input
+              type="number"
+              className="w-full border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
+              placeholder="Min Price"
+              value={minPrice}
+              min={0}
+              onChange={e => setMinPrice(e.target.value)}
+            />
+          </div>
 
-          <input
-            type="number"
-            className="w-full border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
-            placeholder="Max Price"
-            value={maxPrice}
-            min={0}
-            onChange={e => setMaxPrice(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Max Price
+            </label>
+            <input
+              type="number"
+              className="w-full border p-2 rounded-xl border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600"
+              placeholder="Max Price"
+              value={maxPrice}
+              min={0}
+              onChange={e => setMaxPrice(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* ROOM CARDS */}
@@ -516,33 +558,56 @@ export default function RoomManagement() {
               </button>
             </div>
             <div className="p-5">
-              <input
-                className="border p-3 w-full mb-2 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
-                value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
-              />
-              <input
-                type="number"
-                className="border p-3 w-full mb-2 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
-                value={form.capacity}
-                min={1}
-                onChange={e => setForm({ ...form, capacity: e.target.value })}
-              />
-              <input
-                type="number"
-                className="border p-3 w-full mb-2 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
-                value={form.creditsPerHour}
-                min={0}
-                onChange={e => setForm({ ...form, creditsPerHour: e.target.value })}
-              />
-              <select
-                className="border p-3 w-full mb-2 rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
-                value={form.type}
-                onChange={e => setForm({ ...form, type: e.target.value })}
-              >
-                <option value="standard">Standard</option>
-                <option value="boardroom">Boardroom</option>
-              </select>
+              <div className="flex flex-col gap-1 mb-2">
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Room Name
+                </label>
+                <input
+                  className="border p-3 w-full rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1 mb-2">
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Capacity
+                </label>
+                <input
+                  type="number"
+                  className="border p-3 w-full rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
+                  value={form.capacity}
+                  min={1}
+                  onChange={e => setForm({ ...form, capacity: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1 mb-2">
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Credits Per Hour
+                </label>
+                <input
+                  type="number"
+                  className="border p-3 w-full rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition"
+                  value={form.creditsPerHour}
+                  min={0}
+                  onChange={e => setForm({ ...form, creditsPerHour: e.target.value })}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1 mb-2">
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Room Type
+                </label>
+                <select
+                  className="border p-3 w-full rounded-xl border-gray-300 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition cursor-pointer"
+                  value={form.type}
+                  onChange={e => setForm({ ...form, type: e.target.value })}
+                >
+                  <option value="standard">Standard</option>
+                  <option value="boardroom">Boardroom</option>
+                </select>
+              </div>
             </div>
             <div className="flex justify-end gap-3 p-5">
               <button

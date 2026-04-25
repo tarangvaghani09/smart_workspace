@@ -243,48 +243,73 @@ export default function ResourceManagement() {
 
         {/* FILTER BAR */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-8">
-          <input
-            className="border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
-            placeholder="Search by name"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Resource Name
+            </label>
+            <input
+              className="w-full border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
+              placeholder="Search by name"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
 
-          <input
-            type="number"
-            className="border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
-            placeholder="Min Qty"
-            value={minQty}
-            min={1}
-            onChange={e => setMinQty(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Min Quantity
+            </label>
+            <input
+              type="number"
+              className="w-full border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
+              placeholder="Min Qty"
+              value={minQty}
+              min={1}
+              onChange={e => setMinQty(e.target.value)}
+            />
+          </div>
 
-          <input
-            type="number"
-            className="border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
-            placeholder="Max Qty"
-            value={maxQty}
-            min={0}
-            onChange={e => setMaxQty(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Max Quantity
+            </label>
+            <input
+              type="number"
+              className="w-full border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
+              placeholder="Max Qty"
+              value={maxQty}
+              min={0}
+              onChange={e => setMaxQty(e.target.value)}
+            />
+          </div>
 
-          <input
-            type="number"
-            className="border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
-            placeholder="Min Credits"
-            value={minCredits}
-            min={1}
-            onChange={e => setMinCredits(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Min Credits
+            </label>
+            <input
+              type="number"
+              className="w-full border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
+              placeholder="Min Credits"
+              value={minCredits}
+              min={1}
+              onChange={e => setMinCredits(e.target.value)}
+            />
+          </div>
 
-          <input
-            type="number"
-            className="border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
-            placeholder="Max Credits"
-            value={maxCredits}
-            min={0}
-            onChange={e => setMaxCredits(e.target.value)}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              Max Credits
+            </label>
+            <input
+              type="number"
+              className="w-full border border-gray-300 active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition text-gray-600 p-2 rounded-xl"
+              placeholder="Max Credits"
+              value={maxCredits}
+              min={0}
+              onChange={e => setMaxCredits(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* RESOURCE CARDS */}
@@ -438,43 +463,62 @@ export default function ResourceManagement() {
             </div>
 
             <div className="p-5">
-              <input
-                className="border p-3 w-full mb-2 rounded-xl active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
-                value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
-              />
+              <div className="flex flex-col gap-1 mb-2">
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Resource Name
+                </label>
+                <input
+                  className="border p-3 w-full rounded-xl active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                />
+              </div>
 
-              <input
-                type="number"
-                className="border p-3 w-full mb-2 rounded-xl active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
-                value={form.quantity}
-                min={1}
-                onChange={e =>
-                  setForm({ ...form, quantity: e.target.value })
-                }
-              />
+              <div className="flex flex-col gap-1 mb-2">
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Quantity
+                </label>
+                <input
+                  type="number"
+                  className="border p-3 w-full rounded-xl active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
+                  value={form.quantity}
+                  min={1}
+                  onChange={e =>
+                    setForm({ ...form, quantity: e.target.value })
+                  }
+                />
+              </div>
 
-              <input
-                type="number"
-                className="border p-3 w-full mb-2 rounded-xl active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
-                value={form.creditsPerHour}
-                min={1}
-                onChange={e =>
-                  setForm({ ...form, creditsPerHour: e.target.value })
-                }
-              />
+              <div className="flex flex-col gap-1 mb-2">
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Credits Per Hour
+                </label>
+                <input
+                  type="number"
+                  className="border p-3 w-full rounded-xl active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
+                  value={form.creditsPerHour}
+                  min={1}
+                  onChange={e =>
+                    setForm({ ...form, creditsPerHour: e.target.value })
+                  }
+                />
+              </div>
 
-              <select
-                className="border p-3 w-full mb-2 rounded-xl active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
-                value={form.isMovable ? 'true' : 'false'}
-                onChange={e =>
-                  setForm({ ...form, isMovable: e.target.value === 'true' })
-                }
-              >
-                <option value="" disabled>Movable</option>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-              </select>
+              <div className="flex flex-col gap-1 mb-2">
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Movable
+                </label>
+                <select
+                  className="border p-3 w-full rounded-xl active:border-blue-800 focus:border-blue-800 focus:ring-1 focus:ring-blue-800 outline-none transition border-gray-300"
+                  value={form.isMovable ? 'true' : 'false'}
+                  onChange={e =>
+                    setForm({ ...form, isMovable: e.target.value === 'true' })
+                  }
+                >
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 p-5">
