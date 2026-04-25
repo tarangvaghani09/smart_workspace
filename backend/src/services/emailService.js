@@ -369,7 +369,7 @@ async function sendBookingExpiredEmail(bookingId) {
 
     return {
       dateText: date,
-      timeText: `${start} â€“ ${end} IST`
+      timeText: `${start} – ${end} IST`
     };
   }
 
